@@ -1,0 +1,222 @@
+/* Guest Notice Banner */
+.guest-notice {
+    position: relative;
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    animation: slideInDown 0.5s ease-out;
+    border-left: 5px solid;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.guest-notice.info {
+    background: linear-gradient(135deg, rgba(0, 89, 170, 0.1), rgba(32, 201, 151, 0.1));
+    border-left-color: #0059AA;
+}
+
+.guest-notice.warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.15));
+    border-left-color: #FFC107;
+}
+
+.guest-notice.urgent {
+    background: linear-gradient(135deg, rgba(242, 51, 83, 0.15), rgba(220, 38, 38, 0.15));
+    border-left-color: #F23353;
+    animation: slideInDown 0.5s ease-out, pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(242, 51, 83, 0.3);
+    }
+}
+
+.guest-notice-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.guest-notice-icon {
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.guest-notice.info .guest-notice-icon {
+    color: #0059AA;
+}
+
+.guest-notice.warning .guest-notice-icon {
+    color: #FFC107;
+}
+
+.guest-notice.urgent .guest-notice-icon {
+    color: #F23353;
+}
+
+.guest-notice-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.guest-notice-text {
+    flex: 1;
+}
+
+.guest-notice-text h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #212529;
+}
+
+.guest-notice-text p {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    margin: 0;
+    color: #495057;
+    line-height: 1.5;
+}
+
+.guest-notice-text strong {
+    font-weight: 700;
+    color: #212529;
+}
+
+.guest-notice-actions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.guest-notice-btn {
+    font-family: 'Inter', sans-serif;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    white-space: nowrap;
+}
+
+.guest-notice-btn.primary {
+    background: linear-gradient(135deg, #0059AA, #0073cc);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 89, 170, 0.3);
+}
+
+.guest-notice-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 89, 170, 0.4);
+}
+
+.guest-notice-btn.secondary {
+    background: rgba(108, 117, 125, 0.1);
+    color: #495057;
+}
+
+.guest-notice-btn.secondary:hover {
+    background: rgba(108, 117, 125, 0.2);
+}
+
+.guest-notice-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #495057;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guest-notice-close:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: rotate(90deg);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .guest-notice {
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .guest-notice-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .guest-notice-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+    
+    .guest-notice-icon svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+    
+    .guest-notice-text h3 {
+        font-size: 1.1rem;
+    }
+    
+    .guest-notice-text p {
+        font-size: 0.9rem;
+    }
+    
+    .guest-notice-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .guest-notice-btn {
+        width: 100%;
+        padding: 0.875rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .guest-notice {
+        padding: 1rem;
+    }
+    
+    .guest-notice-text h3 {
+        font-size: 1rem;
+    }
+    
+    .guest-notice-text p {
+        font-size: 0.85rem;
+    }
+}

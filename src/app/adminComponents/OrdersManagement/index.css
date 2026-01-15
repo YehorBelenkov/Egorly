@@ -1,0 +1,335 @@
+/* Orders Management */
+.orders-management {
+    padding: 20px;
+}
+
+.orders-header {
+    margin-bottom: 24px;
+}
+
+.orders-header h2 {
+    font-size: 2rem;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+}
+
+.orders-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.orders-stats .stat {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.filter-tabs button {
+    padding: 12px 24px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-tabs button:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.filter-tabs button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+}
+
+/* Orders List */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.admin-order-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.admin-order-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.order-summary {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.order-info {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.order-id {
+    font-weight: 700;
+    color: #3b82f6;
+    font-family: monospace;
+    font-size: 1.1rem;
+}
+
+.order-customer {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.order-email {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.order-meta {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.order-date {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.order-total {
+    font-weight: 700;
+    color: #10b981;
+    font-size: 1.2rem;
+}
+
+.order-status-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+/* Order Details Admin */
+.order-details-admin {
+    padding: 24px;
+    background: #fafbfc;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.detail-section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.detail-section h4 {
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    margin: 0 0 16px 0;
+    font-weight: 700;
+    border-bottom: 2px solid #f3f4f6;
+    padding-bottom: 8px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.detail-section p {
+    margin: 8px 0;
+    color: #6b7280;
+}
+
+.totals-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.totals-breakdown > div {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.totals-breakdown .total {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #10b981;
+    border-top: 2px solid #e5e7eb;
+    padding-top: 12px;
+    margin-top: 8px;
+    border-bottom: none;
+}
+
+/* Status Controls */
+.status-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.status-controls label {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.9rem;
+}
+
+.status-controls select {
+    padding: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.status-controls select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Tracking Controls */
+.tracking-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tracking-controls label {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.9rem;
+}
+
+.tracking-controls input {
+    padding: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.tracking-controls input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.update-tracking-btn {
+    padding: 12px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+
+.update-tracking-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Loading */
+.admin-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    font-size: 1.2rem;
+    color: #6b7280;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .order-summary {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .order-info {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .order-meta {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .orders-stats {
+        flex-direction: column;
+    }
+
+    .filter-tabs {
+        flex-direction: column;
+    }
+
+    .filter-tabs button {
+        width: 100%;
+    }
+}

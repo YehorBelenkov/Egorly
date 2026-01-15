@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Telegram Chat ID</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .step h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            background: #e7f3ff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 2px solid #667eea;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .chat-id {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            margin: 20px 0;
+        }
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Get Your Telegram Chat ID</h1>
+        <p>Follow these simple steps to get your Chat ID for order notifications:</p>
+
+        <div class="step">
+            <h2>📱 Step 1: Message Your Bot</h2>
+            <p>1. Open Telegram on your phone or desktop</p>
+            <p>2. Search for your bot (the name you gave it when creating with BotFather)</p>
+            <p>3. Click "Start" or send any message like "Hello"</p>
+            <div class="warning">
+                ⚠️ <strong>Important:</strong> You MUST send at least one message to your bot first!
+            </div>
+        </div>
+
+        <div class="step">
+            <h2>🔍 Step 2: Click the Button Below</h2>
+            <p>This will fetch your Chat ID from Telegram's API:</p>
+            <button onclick="getChatId()">Get My Chat ID</button>
+        </div>
+
+        <div id="result" class="result">
+            <h2>✅ Your Chat ID:</h2>
+            <div class="chat-id" id="chatId"></div>
+            
+            <div class="success">
+                <h3>📝 Next Steps:</h3>
+                <ol>
+                    <li>Copy the Chat ID above</li>
+                    <li>Add it to your <code>.env.local</code> file:
+                        <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px; margin: 10px 0;">TELEGRAM_CHAT_ID=<span id="chatIdCopy"></span></pre>
+                    </li>
+                    <li>Restart your dev server: <code>npm run dev</code></li>
+                    <li>For production (Vercel): Add <code>TELEGRAM_CHAT_ID</code> in your environment variables</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="step">
+            <h2>🆘 Alternative Method</h2>
+            <p>If the button doesn't work, you can manually check:</p>
+            <ol>
+                <li>Visit this URL in your browser (after messaging your bot):
+                    <br><a href="https://api.telegram.org/bot8376385543:AAHqA3Scvocp6jYOIswl9pwPJrkdEfuISZE/getUpdates" target="_blank">
+                        https://api.telegram.org/bot8376385543:AAHqA3Scvocp6jYOIswl9pwPJrkdEfuISZE/getUpdates
+                    </a>
+                </li>
+                <li>Look for <code>"chat":{"id":123456789</code></li>
+                <li>The number is your Chat ID</li>
+            </ol>
+            
+            <p><strong>OR use @userinfobot:</strong></p>
+            <ol>
+                <li>Search for <code>@userinfobot</code> in Telegram</li>
+                <li>Start a chat with it</li>
+                <li>It will instantly show your Chat ID</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        async function getChatId() {
+            const botToken = '8376385543:AAHqA3Scvocp6jYOIswl9pwPJrkdEfuISZE';
+            const apiUrl = `https://api.telegram.org/bot${botToken}/getUpdates`;
+            
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                if (data.ok && data.result && data.result.length > 0) {
+                    // Get the most recent message
+                    const lastUpdate = data.result[data.result.length - 1];
+                    const chatId = lastUpdate.message?.chat?.id || lastUpdate.my_chat_member?.chat?.id;
+                    
+                    if (chatId) {
+                        document.getElementById('chatId').textContent = chatId;
+                        document.getElementById('chatIdCopy').textContent = chatId;
+                        document.getElementById('result').classList.add('show');
+                    } else {
+                        alert('❌ Could not find Chat ID. Make sure you sent a message to your bot first!');
+                    }
+                } else {
+                    alert('❌ No messages found. Please:\n\n1. Open Telegram\n2. Find your bot\n3. Send it a message (e.g., "Hello")\n4. Try again');
+                }
+            } catch (error) {
+                alert('❌ Error fetching Chat ID: ' + error.message);
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

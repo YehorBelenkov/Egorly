@@ -1,0 +1,545 @@
+/* About Page - Matching Login Page Design */
+
+/* Animated Background */
+.about-page-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0059aa 0%, #0073cc 100%);
+    z-index: -1;
+}
+
+.area {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.circles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.circles li {
+    position: absolute;
+    display: block;
+    list-style: none;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    animation: animate 25s linear infinite;
+    bottom: -150px;
+}
+
+.circles li:nth-child(1) {
+    left: 25%;
+    width: 80px;
+    height: 80px;
+    animation-delay: 0s;
+}
+
+.circles li:nth-child(2) {
+    left: 10%;
+    width: 20px;
+    height: 20px;
+    animation-delay: 2s;
+    animation-duration: 12s;
+}
+
+.circles li:nth-child(3) {
+    left: 70%;
+    width: 20px;
+    height: 20px;
+    animation-delay: 4s;
+}
+
+.circles li:nth-child(4) {
+    left: 40%;
+    width: 60px;
+    height: 60px;
+    animation-delay: 0s;
+    animation-duration: 18s;
+}
+
+.circles li:nth-child(5) {
+    left: 65%;
+    width: 20px;
+    height: 20px;
+    animation-delay: 0s;
+}
+
+.circles li:nth-child(6) {
+    left: 75%;
+    width: 110px;
+    height: 110px;
+    animation-delay: 3s;
+}
+
+.circles li:nth-child(7) {
+    left: 35%;
+    width: 150px;
+    height: 150px;
+    animation-delay: 7s;
+}
+
+.circles li:nth-child(8) {
+    left: 50%;
+    width: 25px;
+    height: 25px;
+    animation-delay: 15s;
+    animation-duration: 45s;
+}
+
+.circles li:nth-child(9) {
+    left: 20%;
+    width: 15px;
+    height: 15px;
+    animation-delay: 2s;
+    animation-duration: 35s;
+}
+
+.circles li:nth-child(10) {
+    left: 85%;
+    width: 150px;
+    height: 150px;
+    animation-delay: 0s;
+    animation-duration: 11s;
+}
+
+@keyframes animate {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+        border-radius: 0;
+    }
+    100% {
+        transform: translateY(-1000px) rotate(720deg);
+        opacity: 0;
+        border-radius: 50%;
+    }
+}
+
+/* Main Container */
+.about_page_container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    padding-top: 100px;
+    padding-bottom: 3rem;
+    position: relative;
+    z-index: 1;
+}
+
+.about_content_wrapper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 3rem;
+    max-width: 900px;
+    width: 100%;
+    animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Company Branding */
+.company-branding {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.brand-text {
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 500;
+    color: #666;
+}
+
+.animated-brand {
+    background: linear-gradient(90deg, #0059aa, #0073cc, #0059aa);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 20s ease infinite;
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Hero Section */
+.about_hero {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.about_h1 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #212529;
+    margin: 0 0 1rem 0;
+    letter-spacing: -0.02em;
+}
+
+.about_tagline {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.2rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Content Sections */
+.about_sections {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.about_section {
+    animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section_icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.section_title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0 0 1rem 0;
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+.section_text {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.05rem;
+    color: #495057;
+    line-height: 1.8;
+    margin: 0;
+    text-align: center;
+}
+
+/* Features Grid */
+.features_grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.feature_item {
+    background: linear-gradient(135deg, rgba(0, 89, 170, 0.05) 0%, rgba(0, 115, 204, 0.05) 100%);
+    padding: 1.5rem;
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(0, 89, 170, 0.1);
+}
+
+.feature_item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 89, 170, 0.15);
+    border-color: rgba(0, 89, 170, 0.3);
+}
+
+.feature_icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature_item h4 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0 0 0.5rem 0;
+}
+
+.feature_item p {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Values List */
+.values_list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 2rem;
+}
+
+.value_item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: rgba(0, 89, 170, 0.03);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border-left: 4px solid #0059aa;
+}
+
+.value_bullet {
+    color: #0059aa;
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.value_item div {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1rem;
+    color: #495057;
+    line-height: 1.6;
+}
+
+.value_item strong {
+    color: #212529;
+    font-weight: 700;
+}
+
+/* CTA Section */
+.cta_section {
+    background: linear-gradient(135deg, rgba(0, 89, 170, 0.08) 0%, rgba(0, 115, 204, 0.08) 100%);
+    padding: 2.5rem;
+    border-radius: 20px;
+    border: 2px solid rgba(0, 89, 170, 0.15);
+}
+
+.cta_buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.cta_button {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.cta_button.primary {
+    background: linear-gradient(135deg, #0059aa 0%, #0073cc 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(0, 89, 170, 0.3);
+}
+
+.cta_button.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0, 89, 170, 0.4);
+}
+
+.cta_button.secondary {
+    background: white;
+    color: #0059aa;
+    border: 2px solid #0059aa;
+}
+
+.cta_button.secondary:hover {
+    background: #0059aa;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 89, 170, 0.3);
+}
+
+/* Privacy Link */
+.privacy_link_section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e9ecef;
+    text-align: center;
+}
+
+.privacy_link {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+}
+
+.privacy_link:hover {
+    color: #0059aa;
+    background: rgba(0, 89, 170, 0.05);
+}
+
+.privacy_link svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .about_content_wrapper {
+        padding: 2rem 1.5rem;
+    }
+
+    .about_h1 {
+        font-size: 2rem;
+    }
+
+    .about_tagline {
+        font-size: 1rem;
+    }
+
+    .section_title {
+        font-size: 1.5rem;
+    }
+
+    .section_text {
+        font-size: 0.95rem;
+    }
+
+    .features_grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cta_section {
+        padding: 2rem 1.5rem;
+    }
+
+    .cta_buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .cta_button {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1rem 1.5rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .about_page_container {
+        padding: 1rem 0.5rem;
+        padding-top: 90px;
+        padding-bottom: 2rem;
+    }
+
+    .about_content_wrapper {
+        padding: 1.5rem 1rem;
+        border-radius: 16px;
+        overflow-x: hidden;
+    }
+
+    .animated-brand {
+        font-size: 1.5rem;
+    }
+
+    .about_h1 {
+        font-size: 1.6rem;
+    }
+
+    .about_tagline {
+        font-size: 0.9rem;
+    }
+
+    .section_icon {
+        font-size: 2.5rem;
+    }
+
+    .section_title {
+        font-size: 1.3rem;
+    }
+
+    .about_sections {
+        gap: 2rem;
+    }
+
+    .feature_icon {
+        font-size: 2rem;
+    }
+
+    .feature_item h4 {
+        font-size: 1rem;
+    }
+
+    .feature_item p {
+        font-size: 0.85rem;
+    }
+
+    .cta_section {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .cta_buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+    }
+
+    .cta_button {
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        width: 100%;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+}

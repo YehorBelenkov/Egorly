@@ -1,0 +1,447 @@
+/* Import Poppins font for animated branding */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 89, 170, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(242, 51, 83, 0.03) 0%, transparent 50%),
+        linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    position: relative;
+}
+
+/* Animated Background Circles - Same as Payment */
+.area {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0059AA, #004080);
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* Hide reCAPTCHA badge */
+.grecaptcha-badge {
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+.circles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.circles li {
+    position: absolute;
+    display: block;
+    list-style: none;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    animation: animate 25s linear infinite;
+    bottom: -150px;
+}
+
+.circles li:nth-child(1) {
+    left: 25%;
+    width: 80px;
+    height: 80px;
+    animation-delay: 0s;
+    background: rgba(32, 201, 151, 0.2);
+}
+
+.circles li:nth-child(2) {
+    left: 10%;
+    width: 20px;
+    height: 20px;
+    animation-delay: 2s;
+    animation-duration: 12s;
+    background: rgba(242, 51, 83, 0.15);
+}
+
+.circles li:nth-child(3) {
+    left: 70%;
+    width: 20px;
+    height: 20px;
+    animation-delay: 4s;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.circles li:nth-child(4) {
+    left: 40%;
+    width: 60px;
+    height: 60px;
+    animation-delay: 0s;
+    animation-duration: 18s;
+    background: rgba(32, 201, 151, 0.18);
+}
+
+.circles li:nth-child(5) {
+    left: 65%;
+    width: 20px;
+    height: 20px;
+    animation-delay: 0s;
+    background: rgba(242, 51, 83, 0.12);
+}
+
+.circles li:nth-child(6) {
+    left: 75%;
+    width: 110px;
+    height: 110px;
+    animation-delay: 3s;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.circles li:nth-child(7) {
+    left: 35%;
+    width: 150px;
+    height: 150px;
+    animation-delay: 7s;
+    background: rgba(32, 201, 151, 0.1);
+}
+
+.circles li:nth-child(8) {
+    left: 50%;
+    width: 25px;
+    height: 25px;
+    animation-delay: 15s;
+    animation-duration: 45s;
+    background: rgba(242, 51, 83, 0.2);
+}
+
+.circles li:nth-child(9) {
+    left: 20%;
+    width: 15px;
+    height: 15px;
+    animation-delay: 2s;
+    animation-duration: 35s;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.circles li:nth-child(10) {
+    left: 85%;
+    width: 150px;
+    height: 150px;
+    animation-delay: 0s;
+    animation-duration: 11s;
+    background: rgba(32, 201, 151, 0.15);
+}
+
+@keyframes animate {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+        border-radius: 0;
+    }
+    100% {
+        transform: translateY(-1000px) rotate(720deg);
+        opacity: 0;
+        border-radius: 50%;
+    }
+}
+
+.login-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Login Form Container */
+.login_container {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: white;
+    width: min(550px, 95vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    border: none;
+    border-radius: 24px;
+    padding: 3.5rem 3rem;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    z-index: 1000;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* Company Branding - Matching Payment Page */
+.company-branding {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.brand-text {
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: rgba(0, 89, 170, 0.6);
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 2px double rgba(0, 89, 170, 0.3);
+    border-width: 2px 0;
+    padding: 1em 0;
+    margin: 0;
+    position: relative;
+    line-height: 1.6;
+}
+
+.animated-brand {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 2.5em;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    padding: 0.2em 0 0.3em;
+    display: block;
+    margin: 0 auto;
+    text-shadow: 0 0 30px rgba(32, 201, 151, 0.5);
+    
+    /* Create smooth animated gradient background */
+    background: linear-gradient(
+        90deg,
+        #0059AA 0%,
+        #004080 12%,
+        #20C997 25%,
+        #17a085 37%,
+        #F23353 50%,
+        #17a085 63%,
+        #20C997 75%,
+        #004080 87%,
+        #0059AA 100%
+    );
+    background-size: 400% 100%;
+    
+    /* Clip background to text */
+    -webkit-background-clip: text;
+    background-clip: text;
+    
+    /* Make text transparent to show background */
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    
+    /* Animate the background with smooth easing */
+    animation: animatedTextFill 20s ease-in-out infinite;
+    
+    /* Hardware acceleration for smooth animation */
+    transform: translate3d(0,0,0);
+    backface-visibility: hidden;
+}
+
+@keyframes animatedTextFill {
+    0% { 
+        background-position: 0% 50%; 
+    }
+    25% { 
+        background-position: 25% 50%; 
+    }
+    50% { 
+        background-position: 50% 50%; 
+    }
+    75% { 
+        background-position: 75% 50%; 
+    }
+    100% { 
+        background-position: 100% 50%; 
+    }
+}
+
+.login_con_log {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.logo_l {
+    width: 4rem;
+    height: 4rem;
+}
+
+.hG {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 0;
+    margin: 0 0 1.25rem 0;
+    font-weight: 700;
+    font-size: 1.75rem;
+    background: linear-gradient(135deg, #0059aa 0%, #0073cc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    text-align: center;
+}
+
+.txt_container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.txt_container > p[style*="color: red"] {
+    background: #fee;
+    color: #dc3545 !important;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    border-left: 4px solid #dc3545;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.fill_input_con {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    gap: 0.65rem;
+    font-weight: 600;
+    color: #212529;
+    font-size: 1rem;
+}
+
+.fill_input_con input {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+    font-weight: 500;
+}
+
+.fill_input_con input:focus {
+    outline: none;
+    border-color: #0059aa;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(0, 89, 170, 0.1);
+}
+
+.login_btn {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.05rem;
+    padding: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, #0059aa 0%, #0073cc 100%);
+    border: none;
+    border-radius: 12px;
+    color: white !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 89, 170, 0.3);
+    letter-spacing: 0.02em;
+    margin-top: 0.5rem;
+}
+
+.login_btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 89, 170, 0.4);
+}
+
+.login_btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.login_con_log.gap {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+hr {
+    flex: 1;
+    border: none;
+    height: 1px;
+    background: #dee2e6;
+}
+
+.up {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.font {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 500;
+    color: #212529;
+    font-size: 0.95rem;
+}
+
+.font a {
+    color: #0059aa;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    padding: 0.5rem 1.25rem;
+    background: rgba(0, 89, 170, 0.1);
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.font a:hover {
+    background: linear-gradient(135deg, #0059aa 0%, #0073cc 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 89, 170, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .login_container {
+        padding: 2rem 1.5rem;
+        width: 90vw;
+        max-height: 85vh;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .logo_l {
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    .hG.G {
+        font-size: 1.75rem;
+    }
+}

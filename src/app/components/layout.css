@@ -1,0 +1,14 @@
+.main_body{
+    background-color: #F8F8F8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Make the page content area expand so footer stays at bottom */
+.content_wrapper{
+    flex: 1 1 auto;
+    display: block;
+}

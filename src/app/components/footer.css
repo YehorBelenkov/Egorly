@@ -1,0 +1,301 @@
+/* Modern Footer Design */
+
+/* Main Footer Container */
+.footer_container {
+    display: flex;
+    flex-direction: column;
+    background-color: #303030;
+    width: 100%;
+    padding: 3rem 2rem 2rem;
+}
+
+.footer_content {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
+}
+
+/* Footer Sections */
+.footer_section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.footer_section_title {
+    color: #F23353;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 0.5px;
+}
+
+.footer_description {
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Social Links */
+.social_links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.social_link {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.social_link:hover {
+    background: #F23353;
+    transform: translateY(-3px);
+}
+
+.social_link img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* Quick Links */
+.footer_links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.footer_links li a {
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.footer_links li a:hover {
+    color: #F23353;
+    transform: translateX(5px);
+}
+
+/* Contact List */
+.footer_contact_list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.footer_contact_item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.footer_contact_item:hover {
+    color: #F23353;
+}
+
+.contact_icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* Payment Methods */
+.payment_methods {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.payment_icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.payment_icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #F23353;
+    transform: translateY(-2px);
+}
+
+.payment_icon svg {
+    width: 28px;
+    height: 28px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.payment_icon span {
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.payment_note {
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+/* Copyright Section */
+.copyright_container {
+    width: 100%;
+    background-color: #252525;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 2rem;
+}
+
+.copyright_content {
+    max-width: 1400px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.copy_rights_text {
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.footer_legal_links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.footer_legal_links a {
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer_legal_links a:hover {
+    color: #F23353;
+}
+
+.footer_legal_links span {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Tablet View */
+@media (max-width: 1024px) {
+    .footer_content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+}
+
+/* Mobile View */
+@media (max-width: 768px) {
+    .footer_container {
+        padding: 2rem 1.5rem 1.5rem;
+    }
+
+    .footer_content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .footer_section {
+        text-align: center;
+    }
+
+    .footer_links,
+    .footer_contact_list {
+        align-items: center;
+    }
+
+    .social_links {
+        justify-content: center;
+    }
+
+    .payment_methods {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .copyright_content {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 500px) {
+    .footer_container {
+        padding: 1.5rem 1rem 1rem;
+    }
+
+    .footer_section_title {
+        font-size: 1.1rem;
+    }
+
+    .footer_description,
+    .footer_links li a,
+    .footer_contact_item {
+        font-size: 0.85rem;
+    }
+
+    .payment_methods {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .payment_icon {
+        padding: 0.5rem;
+    }
+
+    .payment_icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .payment_icon span {
+        font-size: 0.7rem;
+    }
+
+    .copy_rights_text,
+    .footer_legal_links a {
+        font-size: 0.8rem;
+    }
+}
