@@ -24,6 +24,7 @@ const Navbar = ({ user, onLogout }) => {
           <Link className="nav_link" href={"/"}>Home</Link>
           <Link className="nav_link" href={"/"}>Products</Link>
           <Link className="nav_link" href={"/about"}>About</Link>
+          <Link className="nav_link" href={"/winners"}>Winners</Link>
           <Link className="nav_link" href={"/contact"}>Contact</Link>
           <Link className="nav_link" href={"/profile"}>Profile</Link>
         </div>
@@ -99,6 +100,10 @@ const Navbar = ({ user, onLogout }) => {
           <Link className="mobile_nav_link" href={"/about"} onClick={closeMenu}>
             <span className="link_icon">ℹ️</span>
             <span>About Us</span>
+          </Link>
+          <Link className="mobile_nav_link" href={"/winners"} onClick={closeMenu}>
+            <span className="link_icon">🏆</span>
+            <span>Winners</span>
           </Link>
           <Link className="mobile_nav_link" href={"/contact"} onClick={closeMenu}>
             <span className="link_icon">✉️</span>

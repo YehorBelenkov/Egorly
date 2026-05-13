@@ -7,6 +7,7 @@ const AddProduct = ({ onClose, idToken }) => {
     name: '',
     price: '',
     quantity: '',
+    cjProductId: '', // CJ Dropshipping Product ID (PID)
     images: [], // Changed to array for multiple images
     video: null, // Video file
     description: '',
@@ -17,6 +18,11 @@ const AddProduct = ({ onClose, idToken }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // CJ product and variants data
+  const [cjProduct, setCjProduct] = useState(null);
+  const [fetchingCJ, setFetchingCJ] = useState(false);
+  const [selectedVariants, setSelectedVariants] = useState({}); // { variantId: { selected: true, customImages: [] } }
   
   // For adding new attributes
   const [newAttributeKey, setNewAttributeKey] = useState('');
@@ -100,14 +106,112 @@ const AddProduct = ({ onClose, idToken }) => {
     setProductData({ ...productData, packingList: updatedList });
   };
 
+  const fetchCJProduct = async () => {
+    if (!productData.cjProductId || !productData.cjProductId.trim()) {
+      alert('Please enter a CJ Product ID (PID) first');
+      return;
+    }
+
+    try {
+      setFetchingCJ(true);
+      setError('');
+      
+      const response = await fetch(`/api/cj/product-details?pid=${encodeURIComponent(productData.cjProductId)}`);
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch CJ product details');
+      }
+
+      // Store CJ product data
+      setCjProduct(result.product);
+      
+      // Auto-fill product name if empty
+      if (!productData.name && result.product.name) {
+        setProductData({ ...productData, name: result.product.name });
+      }
+      
+      // Initialize selectedVariants with all variants unselected
+      const initialSelection = {};
+      result.product.variants?.forEach(variant => {
+        initialSelection[variant.id] = {
+          selected: false,
+          customImages: []
+        };
+      });
+      setSelectedVariants(initialSelection);
+      
+    } catch (err) {
+      setError(err.message);
+      setCjProduct(null);
+      setSelectedVariants({});
+    } finally {
+      setFetchingCJ(false);
+    }
+  };
+
+  const handleVariantToggle = (variantId) => {
+    setSelectedVariants(prev => ({
+      ...prev,
+      [variantId]: {
+        ...prev[variantId],
+        selected: !prev[variantId].selected
+      }
+    }));
+  };
+
+  const handleVariantImageChange = (variantId, e) => {
+    const files = Array.from(e.target.files);
+    setSelectedVariants(prev => ({
+      ...prev,
+      [variantId]: {
+        ...prev[variantId],
+        customImages: [...(prev[variantId].customImages || []), ...files]
+      }
+    }));
+  };
+
+  const handleRemoveVariantImage = (variantId, imageIndex) => {
+    setSelectedVariants(prev => ({
+      ...prev,
+      [variantId]: {
+        ...prev[variantId],
+        customImages: prev[variantId].customImages.filter((_, i) => i !== imageIndex)
+      }
+    }));
+  };
+
   const handleAddProduct = async () => {
     try {
       setLoading(true);
       setError('');
 
-      // Upload all images to Firebase Storage IN PARALLEL (much faster)
+      // Get selected variants
+      const variantsToAdd = Object.entries(selectedVariants)
+        .filter(([_, data]) => data.selected)
+        .map(([variantId, data]) => {
+          const variant = cjProduct?.variants?.find(v => v.id === variantId);
+          return { ...variant, customImages: data.customImages };
+        });
+
+      // If variants are selected, upload custom images for each variant
       const storage = getStorage();
-      
+      const processedVariants = await Promise.all(
+        variantsToAdd.map(async (variant) => {
+          if (variant.customImages && variant.customImages.length > 0) {
+            const uploadPromises = variant.customImages.map(async (image, index) => {
+              const storageRef = ref(storage, `products/${productData.cjProductId}_${variant.id}_${Date.now()}_${index}_${image.name}`);
+              await uploadBytes(storageRef, image);
+              return getDownloadURL(storageRef);
+            });
+            const uploadedUrls = await Promise.all(uploadPromises);
+            return { ...variant, customImageUrls: uploadedUrls, customImages: undefined };
+          }
+          return { ...variant, customImages: undefined };
+        })
+      );
+
+      // Upload main product images to Firebase Storage IN PARALLEL
       const uploadPromises = productData.images.map(async (image, index) => {
         const storageRef = ref(storage, `products/${Date.now()}_${index}_${image.name}`);
         await uploadBytes(storageRef, image);
@@ -129,6 +233,8 @@ const AddProduct = ({ onClose, idToken }) => {
         name: productData.name,
         price: parseFloat(productData.price),
         quantity: parseInt(productData.quantity, 10),
+        cjProductId: productData.cjProductId || null, // CJ Dropshipping Product ID
+        variants: processedVariants, // Selected variants with custom images and SKU data
         description: productData.description,
         descriptionSections: productData.descriptionSections, // Multiple sections
         attributes: productData.attributes, // Dynamic attributes
@@ -136,6 +242,8 @@ const AddProduct = ({ onClose, idToken }) => {
         imageUrls, // Multiple images
         videoUrl, // Video URL (or null)
       };
+
+      console.log('Submitting product data:', product);
 
       // Send product data to backend to add to Firestore
       const productRes = await fetch('/api/addprod', {
@@ -148,7 +256,9 @@ const AddProduct = ({ onClose, idToken }) => {
       });
 
       if (!productRes.ok) {
-        throw new Error('Failed to add product');
+        const errorData = await productRes.json();
+        console.error('Server error:', errorData);
+        throw new Error(errorData.error || 'Failed to add product');
       }
 
       alert('Product added successfully!');
@@ -208,6 +318,39 @@ const AddProduct = ({ onClose, idToken }) => {
                 min="0"
                 required
               />
+              <small style={{color: '#666', fontSize: '0.85rem', marginTop: '4px', display: 'block'}}>
+                {cjProduct ? 'Price can be auto-filled from CJ variants below' : 'Enter price manually or fetch CJ product'}
+              </small>
+            </div>
+            
+            <div className="form-group">
+              <label>CJ Product ID (PID)</label>
+              <input
+                type="text"
+                name="cjProductId"
+                value={productData.cjProductId}
+                onChange={handleInputChange}
+                placeholder="e.g., 1424257508926689280"
+              />
+              <small style={{color: '#666', fontSize: '0.85rem', marginTop: '4px', display: 'block'}}>
+                Product ID from CJ Dropshipping
+              </small>
+              <button 
+                type="button"
+                onClick={fetchCJProduct}
+                disabled={fetchingCJ || !productData.cjProductId}
+                style={{
+                  marginTop: '8px',
+                  padding: '8px 16px',
+                  backgroundColor: fetchingCJ ? '#ccc' : '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: fetchingCJ || !productData.cjProductId ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {fetchingCJ ? 'Fetching...' : '🔍 Fetch Product & Variants'}
+              </button>
             </div>
             
             <div className="form-group">
@@ -224,6 +367,146 @@ const AddProduct = ({ onClose, idToken }) => {
             </div>
           </div>
         </div>
+
+        {/* CJ Variants Selection Section */}
+        {cjProduct && cjProduct.variants && cjProduct.variants.length > 0 && (
+          <div className="form-section">
+            <h3 className="section-title">
+              <span className="section-icon">🎨</span>
+              Select Product Variants
+            </h3>
+            <p style={{ fontSize: '14px', color: '#666', marginBottom: '15px' }}>
+              Choose which variants to add and upload custom images for each
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {cjProduct.variants.map((variant) => (
+                <div 
+                  key={variant.id}
+                  style={{
+                    border: selectedVariants[variant.id]?.selected ? '2px solid #4CAF50' : '1px solid #e0e0e0',
+                    borderRadius: '8px',
+                    padding: '15px',
+                    backgroundColor: selectedVariants[variant.id]?.selected ? '#f0fdf4' : '#fafafa'
+                  }}
+                >
+                  {/* Variant Header with Checkbox */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedVariants[variant.id]?.selected || false}
+                      onChange={() => handleVariantToggle(variant.id)}
+                      style={{ marginTop: '4px', width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    
+                    {variant.image && (
+                      <img 
+                        src={variant.image} 
+                        alt={variant.name}
+                        style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ddd' }}
+                      />
+                    )}
+                    
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', fontSize: '15px', marginBottom: '4px' }}>{variant.name}</div>
+                      {variant.variantKey && (
+                        <div style={{ fontSize: '13px', color: '#3b82f6', marginBottom: '2px' }}>Key: {variant.variantKey}</div>
+                      )}
+                      <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>VID: {variant.id}</div>
+                      <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>SKU: {variant.sku}</div>
+                      <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Price: ${variant.price}</div>
+                      {variant.stock !== undefined && (
+                        <div style={{ 
+                          fontSize: '13px', 
+                          color: variant.stock > 0 ? '#10b981' : '#ef4444',
+                          marginBottom: '2px',
+                          fontWeight: '500'
+                        }}>
+                          Stock: {variant.stock === null ? 'Unknown' : variant.stock}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Custom Image Upload for Selected Variant */}
+                  {selectedVariants[variant.id]?.selected && (
+                    <div style={{ 
+                      marginTop: '12px', 
+                      padding: '12px', 
+                      backgroundColor: 'white', 
+                      borderRadius: '6px',
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>
+                        📸 Upload Custom Images for this Variant
+                      </label>
+                      
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleVariantImageChange(variant.id, e)}
+                        style={{ 
+                          display: 'block',
+                          marginBottom: '10px',
+                          fontSize: '13px',
+                          padding: '8px',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          width: '100%'
+                        }}
+                      />
+                      
+                      {selectedVariants[variant.id]?.customImages?.length > 0 && (
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', 
+                          gap: '10px',
+                          marginTop: '10px'
+                        }}>
+                          {selectedVariants[variant.id].customImages.map((image, imgIndex) => (
+                            <div key={imgIndex} style={{ position: 'relative' }}>
+                              <img
+                                src={URL.createObjectURL(image)}
+                                alt={`Custom ${imgIndex + 1}`}
+                                style={{ 
+                                  width: '100%', 
+                                  height: '80px', 
+                                  objectFit: 'cover', 
+                                  borderRadius: '4px',
+                                  border: '2px solid #ddd'
+                                }}
+                              />
+                              <button
+                                onClick={() => handleRemoveVariantImage(variant.id, imgIndex)}
+                                style={{
+                                  position: 'absolute',
+                                  top: '2px',
+                                  right: '2px',
+                                  background: 'rgba(255, 0, 0, 0.9)',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '50%',
+                                  width: '20px',
+                                  height: '20px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  padding: 0
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Description Section */}
         <div className="form-section">

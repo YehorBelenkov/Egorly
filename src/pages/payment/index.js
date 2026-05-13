@@ -143,7 +143,6 @@ const PaymentInner = ({ user }) => {
     const calculateTotal = () => {
         console.log('Order data:', orderData)
         console.log('Cart items:', orderData.cartItems)
-        console.log('Shipping data:', orderData.shipping)
         
         const itemsTotal = orderData.cartItems.reduce((acc, item) => {
             // Handle different possible price properties
@@ -153,21 +152,14 @@ const PaymentInner = ({ user }) => {
             return acc + (itemPrice * quantity)
         }, 0)
         
-        const shippingCost = orderData.shipping ? parseFloat(
-            orderData.shipping.shipment_charge || 
-            orderData.shipping.amount || 
-            orderData.shipping.cost || 
-            orderData.shipping.price || 0
-        ) : 0
-        console.log('Items total:', itemsTotal, 'Shipping cost:', shippingCost)
+        console.log('Items total:', itemsTotal)
         
         const tax = itemsTotal * 0.08 // 8% tax
         
         return {
             subtotal: itemsTotal,
-            shipping: shippingCost,
             tax: tax,
-            total: itemsTotal + shippingCost + tax
+            total: itemsTotal + tax
         }
     }
 
@@ -223,96 +215,219 @@ const PaymentInner = ({ user }) => {
                 setPaymentStatus({
                     type: 'success',
                     message: '🎉 Payment Successful!',
-                    details: `Redirecting you to your orders...`
+                    details: `Processing your order...`
                 })
                 
-                // Save order to Firestore - both in global orders and user orders
+                console.log('✅ Square payment successful, creating CJ order...')
+                
+                // Create order data
+                const orderId = `ORD-${Date.now()}`;
+                const orderNumber = `SQ-${result.paymentId || Date.now()}`;
+                
+                let cjOrderId = null;
+                let cjShipments = [];
+                let cjPaymentStatus = 'pending';
+                let needsFunding = false;
+                
+                // Step 1: Create CJ Order
                 try {
-                    const db = getFirestore(app)
-                    
-                    // Create order details with proper structure
-                    const savedOrderData = {
-                        orderId: result.orderId || `ORD-${Date.now()}`,
-                        paymentId: result.paymentId || null,
-                        userId: user ? user.uid : guestId,
-                        userEmail: user ? user.email : (orderData.customerInfo?.email || 'guest'),
-                        isGuest: !user,
-                        status: 'processing',
-                        items: orderData.cartItems || [],
-                        customerInfo: orderData.customerInfo || {},
-                        shippingAddress: orderData.shippingAddress || {},
-                        shipping: orderData.shipping || {},
-                        totals: {
-                            subtotal: Number(totals.subtotal),
-                            shipping: Number(totals.shipping),
-                            tax: Number(totals.tax),
-                            total: Number(totals.total)
-                        },
-                        orderDate: new Date().toISOString(),
-                        trackingNumber: null,
-                        estimatedDelivery: null,
-                        paymentMethod: 'square',
-                        notes: ''
-                    }
-                    
-                    console.log('=== Attempting to save order ===')
-                    console.log('Order data:', JSON.stringify(savedOrderData, null, 2))
-                    
-                    // Save to global orders collection (for admin) first to get the ID
-                    try {
-                        console.log('Saving to global orders collection...')
-                        const globalOrdersRef = collection(db, 'orders')
-                        const globalDocRef = await addDoc(globalOrdersRef, savedOrderData)
-                        console.log('✅ Order saved to global collection with ID:', globalDocRef.id)
-                        
-                        // Save to user's orders (if logged in) or guest orders (if guest)
-                        if (user) {
-                            console.log('Saving to user orders subcollection with same ID...')
-                            const userOrderDocRef = doc(db, `users/${user.uid}/orders`, globalDocRef.id)
-                            await setDoc(userOrderDocRef, savedOrderData)
-                            console.log('✅ Order saved to user collection with same ID:', globalDocRef.id)
-                        } else if (guestId) {
-                            console.log('Saving to guest orders subcollection with same ID...')
-                            const guestOrderDocRef = doc(db, `guestUsers/${guestId}/orders`, globalDocRef.id)
-                            await setDoc(guestOrderDocRef, savedOrderData)
-                            console.log('✅ Order saved to guest collection with same ID:', globalDocRef.id)
-                        }
-                    } catch (saveError) {
-                        console.error('❌ Failed to save orders:', saveError)
-                        console.error('Error code:', saveError.code)
-                        console.error('Error message:', saveError.message)
-                        throw new Error(`Order save failed: ${saveError.message}`)
-                    }
-                    
-                    // Send Telegram notification
-                    try {
-                        console.log('Sending Telegram notification...')
-                        const notifResponse = await fetch('/api/send-telegram-notification', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
+                    console.log('Creating CJ order...');
+                    const createOrderResponse = await fetch('/api/cj/create-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderNumber: orderNumber,
+                            shippingAddress: {
+                                name: orderData.customerInfo.fullName,
+                                country: orderData.shippingAddress.country || 'US',
+                                province: orderData.shippingAddress.state,
+                                city: orderData.shippingAddress.city,
+                                address: orderData.shippingAddress.address,
+                                zip: orderData.shippingAddress.zip,
+                                phone: orderData.customerInfo.phone
                             },
-                            body: JSON.stringify({ order: savedOrderData }),
+                            productList: orderData.cartItems.map(item => ({
+                                vid: item.variant?.id,
+                                quantity: item.quantity || 1
+                            }))
                         })
-                        const notifResult = await notifResponse.json()
-                        console.log('Telegram notification result:', notifResult)
-                    } catch (notifError) {
-                        console.error('Failed to send Telegram notification:', notifError)
-                        // Don't fail the order if notification fails
+                    });
+                    
+                    const createOrderData = await createOrderResponse.json();
+                    
+                    if (createOrderData.success) {
+                        cjOrderId = createOrderData.order.orderId;
+                        cjShipments = createOrderData.order.shipments || [];
+                        const totalAmount = createOrderData.order.totalAmount || 0;
+                        
+                        console.log(`✅ CJ order created: ${cjOrderId}, Amount: $${totalAmount.toFixed(2)}`);
+                        
+                        // Step 2: Check CJ Balance
+                        try {
+                            console.log('Checking CJ wallet balance...');
+                            const balanceResponse = await fetch('/api/cj/check-balance');
+                            const balanceData = await balanceResponse.json();
+                            
+                            if (balanceData.success) {
+                                const balance = balanceData.balance.amount || 0;
+                                console.log(`💰 CJ Balance: $${balance.toFixed(2)}, Required: $${totalAmount.toFixed(2)}`);
+                                
+                                // Step 3: Pay for CJ Order if balance sufficient
+                                if (balance >= totalAmount) {
+                                    console.log('✅ Sufficient balance, confirming order...');
+                                    
+                                    // Pay for each shipment
+                                    let allPaymentsSuccess = true;
+                                    for (const shipment of cjShipments) {
+                                        try {
+                                            const paymentResponse = await fetch('/api/cj/pay-shipment', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    shipmentOrderId: shipment.shipmentOrderId,
+                                                    payId: `PAY-${orderId}-${shipment.shipmentOrderId}`
+                                                })
+                                            });
+                                            
+                                            const paymentData = await paymentResponse.json();
+                                            if (paymentData.success) {
+                                                console.log(`✅ Shipment ${shipment.shipmentOrderId} paid`);
+                                            } else {
+                                                console.error(`❌ Payment failed for shipment ${shipment.shipmentOrderId}`);
+                                                allPaymentsSuccess = false;
+                                            }
+                                        } catch (payError) {
+                                            console.error('Shipment payment error:', payError);
+                                            allPaymentsSuccess = false;
+                                        }
+                                    }
+                                    
+                                    if (allPaymentsSuccess) {
+                                        cjPaymentStatus = 'paid';
+                                        console.log('✅ All CJ shipments paid successfully');
+                                    } else {
+                                        cjPaymentStatus = 'partially_paid';
+                                        needsFunding = true;
+                                        console.warn('⚠️ Some shipments failed to pay');
+                                    }
+                                } else {
+                                    console.warn(`⚠️ Insufficient CJ balance. Need $${(totalAmount - balance).toFixed(2)} more`);
+                                    needsFunding = true;
+                                    cjPaymentStatus = 'needs_funding';
+                                }
+                            }
+                        } catch (balanceError) {
+                            console.error('Balance check error:', balanceError);
+                            needsFunding = true;
+                            cjPaymentStatus = 'needs_funding';
+                        }
+                    } else {
+                        console.error('CJ order creation failed:', createOrderData.error);
                     }
-                } catch (error) {
-                    console.error('❌ Error saving order:', error)
-                    console.error('Error details:', error.message)
-                    console.error('Error stack:', error.stack)
+                } catch (cjError) {
+                    console.error('CJ order error:', cjError);
+                }
+                
+                // Save order to Firestore
+                try {
+                    console.log('Saving order to Firestore...');
+                    const saveOrderResponse = await fetch('/api/orders/save-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderId,
+                            userId: user?.uid || guestId,
+                            isGuest: !user,
+                            cjOrderId,
+                            cjShipments,
+                            orderNumber,
+                            customerInfo: orderData.customerInfo,
+                            shippingAddress: orderData.shippingAddress,
+                            items: orderData.cartItems,
+                            totals: {
+                                subtotal: Number(totals.subtotal),
+                                shipping: orderData.deliveryEstimate?.price || 0,
+                                tax: Number(totals.tax),
+                                total: Number(totals.total)
+                            },
+                            deliveryEstimate: orderData.deliveryEstimate,
+                            squarePaymentId: result.paymentId,
+                            cjPaymentStatus,
+                            needsFunding
+                        })
+                    });
                     
-                    // Show user-friendly error
-                    const errorMsg = error.message.includes('permission-denied') 
-                        ? 'Permission denied. Please check Firestore security rules.'
-                        : error.message.includes('not-found')
-                        ? 'Firestore database not found. Please check Firebase configuration.'
-                        : `Failed to save order: ${error.message}`;
+                    const saveResult = await saveOrderResponse.json();
                     
-                    alert(`⚠️ Payment successful but order save failed!\n\n${errorMsg}\n\nOrder ID: ${result.orderId || 'N/A'}\n\nPlease contact support immediately.`)
+                    if (saveResult.success) {
+                        console.log('✅ Order saved to Firestore:', orderId);
+                        
+                        // Update success message
+                        setPaymentStatus({
+                            type: 'success',
+                            message: '🎉 Order Confirmed!',
+                            details: needsFunding 
+                                ? 'Your order is being processed. We will confirm shipping soon!'
+                                : 'Your order has been placed and will ship soon!'
+                        });
+                        
+                        // Send Telegram notification
+                        try {
+                            console.log('Sending Telegram notification...');
+                            const notifResponse = await fetch('/api/send-telegram-notification', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    order: {
+                                        orderId,
+                                        orderNumber,
+                                        customerInfo: orderData.customerInfo,
+                                        items: orderData.cartItems,
+                                        total: totals.total,
+                                        needsFunding
+                                    } 
+                                }),
+                            });
+                            const notifResult = await notifResponse.json();
+                            console.log('Telegram notification result:', notifResult);
+                        } catch (notifError) {
+                            console.error('Failed to send Telegram notification:', notifError);
+                            // Don't fail the order if notification fails
+                        }
+                        
+                        // Send order confirmation email to customer
+                        try {
+                            console.log('Sending order confirmation email...');
+                            const emailResponse = await fetch('/api/send-order-confirmation', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    customerEmail: orderData.customerInfo.email,
+                                    customerName: orderData.customerInfo.fullName,
+                                    orderId,
+                                    orderNumber,
+                                    items: orderData.cartItems,
+                                    totals,
+                                    shippingAddress: orderData.shippingAddress,
+                                    deliveryEstimate: orderData.deliveryEstimate,
+                                    orderDate: new Date().toISOString()
+                                })
+                            });
+                            const emailResult = await emailResponse.json();
+                            if (emailResult.success) {
+                                console.log('✅ Order confirmation email sent:', emailResult.emailId);
+                            }
+                        } catch (emailError) {
+                            console.error('Failed to send order confirmation email:', emailError);
+                            // Don't fail the order if email fails
+                        }
+                    } else {
+                        console.error('Failed to save order:', saveResult.error);
+                        alert(`⚠️ Payment successful but order save failed!\n\n${saveResult.error}\n\nOrder ID: ${orderId}\n\nPlease contact support immediately.`);
+                    }
+                } catch (saveError) {
+                    console.error('Order save error:', saveError);
+                    alert(`⚠️ Payment successful but order save failed!\n\n${saveError.message}\n\nOrder ID: ${orderId}\n\nPlease contact support immediately.`);
                 }
                 
                 // Update progress to show confirmation step
@@ -355,9 +470,9 @@ const PaymentInner = ({ user }) => {
                     
                     sessionStorage.removeItem('orderData')
                     
-                    // Redirect to orders page for logged-in users, home for guests
+                    // Redirect to profile page for logged-in users (My Orders section), home for guests
                     if (user) {
-                        window.location.href = '/profile/orders'
+                        window.location.href = '/profile'
                     } else {
                         window.location.href = '/'
                     }
@@ -581,35 +696,6 @@ const PaymentInner = ({ user }) => {
                                     </div>
                                 </>
                             )}
-                            
-                            {orderData.shipping && (
-                                <div className="order-item delivery-item">
-                                    <div className="delivery-icon">🚀</div>
-                                    <div className="item-info">
-                                        <span className="item-name">
-                                            {orderData.shipping.courier_service?.name || 
-                                             orderData.shipping.courier_name || 
-                                             orderData.shipping.service || 
-                                             'Standard Shipping'}
-                                        </span>
-                                        <span className="item-description">
-                                            {orderData.shipping.min_delivery_time && orderData.shipping.max_delivery_time 
-                                                ? `${orderData.shipping.min_delivery_time}-${orderData.shipping.max_delivery_time} days`
-                                                : orderData.shipping.delivery_time || 
-                                                  (orderData.shipping.full_description ? orderData.shipping.full_description.split(',')[0] : 'Standard delivery')
-                                            }
-                                        </span>
-                                    </div>
-                                    <span className="item-price">
-                                        ${parseFloat(
-                                            orderData.shipping.shipment_charge || 
-                                            orderData.shipping.amount || 
-                                            orderData.shipping.cost || 
-                                            orderData.shipping.price || 0
-                                        ).toFixed(2)}
-                                    </span>
-                                </div>
-                            )}
                         </div>
                         
                         <div className="order-total">
@@ -617,9 +703,9 @@ const PaymentInner = ({ user }) => {
                                 <span>Subtotal</span>
                                 <span>${totals.subtotal.toFixed(2)}</span>
                             </div>
-                            <div className="subtotal">
+                            <div className="subtotal shipping-note">
                                 <span>Shipping</span>
-                                <span>${totals.shipping.toFixed(2)}</span>
+                                <span className="included-text">Included in product price</span>
                             </div>
                             <div className="subtotal">
                                 <span>Tax (8%)</span>
@@ -666,6 +752,17 @@ const PaymentInner = ({ user }) => {
                                         <span className="contact-value">{orderData.customerInfo.phone}</span>
                                     </div>
                                 </div>
+                                
+                                {orderData.deliveryEstimate && (
+                                    <div className="delivery-estimate-card">
+                                        <div className="estimate-icon">🚚</div>
+                                        <div className="estimate-details">
+                                            <span className="estimate-label">Estimated Delivery</span>
+                                            <span className="estimate-value">{orderData.deliveryEstimate.days} business days</span>
+                                            <span className="estimate-method">via Standard International Shipping</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -69,6 +69,34 @@ const AdminPanel = () => {
         return <ShowProducts idToken={idToken} />;
       case 'orders':
         return <OrdersManagement idToken={idToken} />;
+      case 'scraper':
+        return (
+          <div className="iframe-page">
+            <div className="iframe-header">
+              <h2>📊 TikTok Live Scraper</h2>
+              <p>Monitor your TikTok live stream engagement in real-time</p>
+            </div>
+            <iframe 
+              src="http://localhost:3001/scraper" 
+              className="admin-content-iframe"
+              title="TikTok Scraper"
+            />
+          </div>
+        );
+      case 'fortuneWheel':
+        return (
+          <div className="iframe-page">
+            <div className="iframe-header">
+              <h2>🎡 Fortune Wheel</h2>
+              <p>Spin the wheel for your TikTok followers and select winners</p>
+            </div>
+            <iframe 
+              src="http://localhost:3001/wheel" 
+              className="admin-content-iframe"
+              title="Fortune Wheel"
+            />
+          </div>
+        );
       default:
         return (
           <div className="welcome-screen">
@@ -150,6 +178,20 @@ const AdminPanel = () => {
             >
               <span className="action-icon">👥</span>
               Customers
+            </button>
+            <button 
+              className={`action ${activeComponent === 'scraper' ? 'active' : ''}`}
+              onClick={() => handleMenuClick('scraper')}
+            >
+              <span className="action-icon">📊</span>
+              TikTok Scraper
+            </button>
+            <button 
+              className={`action ${activeComponent === 'fortuneWheel' ? 'active' : ''}`}
+              onClick={() => handleMenuClick('fortuneWheel')}
+            >
+              <span className="action-icon">🎡</span>
+              Fortune Wheel
             </button>
           </div>
         </div>

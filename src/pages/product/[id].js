@@ -24,6 +24,7 @@ export default function ProductDetail() {
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0); // Track selected image index
+  const [selectedVariant, setSelectedVariant] = useState(null); // Track selected variant
 
   useEffect(() => {
     if (!id) return;
@@ -34,7 +35,12 @@ export default function ProductDetail() {
         const docRef = doc(db, "products", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setProduct(docSnap.data());
+          const productData = docSnap.data();
+          setProduct(productData);
+          // Set first variant as default if variants exist
+          if (productData.variants && productData.variants.length > 0) {
+            setSelectedVariant(productData.variants[0]);
+          }
         } else {
           setProduct(null);
         }
@@ -53,6 +59,13 @@ export default function ProductDetail() {
 
   const handleAddToCart = async (user) => {
     if (!product) return;
+    
+    // Check if product has variants and none is selected
+    if (product.variants && product.variants.length > 0 && !selectedVariant) {
+      alert('Please select a variant');
+      return;
+    }
+    
     setAdding(true);
 
     try {
@@ -67,17 +80,27 @@ export default function ProductDetail() {
           items = cartSnap.data().items || [];
         }
 
-        const existingIndex = items.findIndex((item) => item.id === id);
+        // Use variant-specific ID if variant is selected
+        const cartItemId = selectedVariant ? `${id}_${selectedVariant.id}` : id;
+        const existingIndex = items.findIndex((item) => item.id === cartItemId);
+        
         if (existingIndex !== -1) {
           items[existingIndex].quantity += quantity;
         } else {
           items.push({
-            id,
+            id: cartItemId,
+            productId: id,
             name: product.name,
-            price: product.price,
-            imageUrl: product.imageUrls?.[0] || product.imageUrl || '',
+            price: product.price, // Use product's markup price, not variant price
+            imageUrl: selectedVariant?.customImageUrls?.[0] || product.imageUrls?.[0] || product.imageUrl || '',
             description: product.description,
             quantity,
+            variant: selectedVariant ? {
+              id: selectedVariant.id,
+              sku: selectedVariant.sku, // Keep SKU for backend/CJ ordering
+              name: selectedVariant.name,
+              variantKey: selectedVariant.variantKey
+            } : null,
             addedAt: new Date().toISOString(),
           });
         }
@@ -92,17 +115,26 @@ export default function ProductDetail() {
         const cartData = getGuestCart();
         items = cartData.items || [];
 
-        const existingIndex = items.findIndex((item) => item.id === id);
+        const cartItemId = selectedVariant ? `${id}_${selectedVariant.id}` : id;
+        const existingIndex = items.findIndex((item) => item.id === cartItemId);
+        
         if (existingIndex !== -1) {
           items[existingIndex].quantity += quantity;
         } else {
           items.push({
-            id,
+            id: cartItemId,
+            productId: id,
             name: product.name,
-            price: product.price,
-            imageUrl: product.imageUrls?.[0] || product.imageUrl || '',
+            price: product.price, // Use product's markup price, not variant price
+            imageUrl: selectedVariant?.customImageUrls?.[0] || product.imageUrls?.[0] || product.imageUrl || '',
             description: product.description,
             quantity,
+            variant: selectedVariant ? {
+              id: selectedVariant.id,
+              sku: selectedVariant.sku, // Keep SKU for backend/CJ ordering
+              name: selectedVariant.name,
+              variantKey: selectedVariant.variantKey
+            } : null,
             addedAt: new Date().toISOString(),
           });
         }
@@ -158,42 +190,42 @@ export default function ProductDetail() {
           <div className="product_detail_img_col">
             <div className="image_gallery_wrapper">
               {/* Thumbnail selector on the left */}
-              {((product.imageUrls && product.imageUrls.length > 0) || product.videoUrl) && (
-                <div className="thumbnail_sidebar">
-                  {/* First image */}
-                  {product.imageUrls && product.imageUrls[0] && (
-                    <img
-                      key="img-0"
-                      src={product.imageUrls[0]}
-                      alt={`${product.name} 1`}
-                      onClick={() => setSelectedImage(0)}
-                      className={`thumbnail_image ${selectedImage === 0 ? 'active' : ''}`}
-                    />
-                  )}
-                  
-                  {/* Video as second item */}
-                  {product.videoUrl && (
-                    <div
-                      key="video-thumb"
-                      onClick={() => setSelectedImage('video')}
-                      className={`thumbnail_image video_thumbnail ${selectedImage === 'video' ? 'active' : ''}`}
-                    >
-                      <div className="video_play_icon">▶</div>
-                    </div>
-                  )}
-                  
-                  {/* Rest of the images (from index 1 onwards) */}
-                  {product.imageUrls && product.imageUrls.slice(1).map((img, index) => (
-                    <img
-                      key={`img-${index + 1}`}
-                      src={img}
-                      alt={`${product.name} ${index + 2}`}
-                      onClick={() => setSelectedImage(index + 1)}
-                      className={`thumbnail_image ${selectedImage === index + 1 ? 'active' : ''}`}
-                    />
-                  ))}
-                </div>
-              )}
+              {(() => {
+                // Build combined image array: variant custom images first, then product images
+                let allImages = [];
+                if (selectedVariant && selectedVariant.customImageUrls && selectedVariant.customImageUrls.length > 0) {
+                  allImages = [...selectedVariant.customImageUrls];
+                }
+                if (product.imageUrls && product.imageUrls.length > 0) {
+                  allImages = [...allImages, ...product.imageUrls];
+                }
+                
+                return (allImages.length > 0 || product.videoUrl) && (
+                  <div className="thumbnail_sidebar">
+                    {/* Images */}
+                    {allImages.map((img, index) => (
+                      <img
+                        key={`img-${index}`}
+                        src={img}
+                        alt={`${product.name} ${index + 1}`}
+                        onClick={() => setSelectedImage(index)}
+                        className={`thumbnail_image ${selectedImage === index ? 'active' : ''}`}
+                      />
+                    ))}
+                    
+                    {/* Video as last item */}
+                    {product.videoUrl && (
+                      <div
+                        key="video-thumb"
+                        onClick={() => setSelectedImage('video')}
+                        className={`thumbnail_image video_thumbnail ${selectedImage === 'video' ? 'active' : ''}`}
+                      >
+                        <div className="video_play_icon">▶</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               
               {/* Main product image or video */}
               <div className="main_image_wrapper">
@@ -208,18 +240,98 @@ export default function ProductDetail() {
                     <source src={product.videoUrl} type="video/ogg" />
                     Your browser does not support the video tag.
                   </video>
-                ) : (
-                  <img
-                    className="product_image"
-                    src={(product.imageUrls && product.imageUrls[selectedImage]) || product.imageUrl || '/placeholder.png'}
-                    alt={product.name || 'Product Image'}
-                  />
-                )}
+                ) : (() => {
+                  // Build combined image array same way
+                  let allImages = [];
+                  if (selectedVariant && selectedVariant.customImageUrls && selectedVariant.customImageUrls.length > 0) {
+                    allImages = [...selectedVariant.customImageUrls];
+                  }
+                  if (product.imageUrls && product.imageUrls.length > 0) {
+                    allImages = [...allImages, ...product.imageUrls];
+                  }
+                  
+                  return (
+                    <img
+                      className="product_image"
+                      src={allImages[selectedImage] || product.imageUrl || '/placeholder.png'}
+                      alt={product.name || 'Product Image'}
+                    />
+                  );
+                })()}
               </div>
             </div>
             
             {/* Add to Cart Section */}
             <div className="add_to_cart_section">
+              {/* Variant Selector */}
+              {product.variants && product.variants.length > 0 && (
+                <div className="variant_selector_section" style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '10px', fontSize: '15px' }}>
+                    Select Variant:
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                    {product.variants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => {
+                          setSelectedVariant(variant);
+                          setSelectedImage(0); // Reset to first image when variant changes
+                        }}
+                        style={{
+                          padding: '10px 16px',
+                          border: selectedVariant?.id === variant.id ? '2px solid #4CAF50' : '1px solid #ddd',
+                          borderRadius: '6px',
+                          backgroundColor: selectedVariant?.id === variant.id ? '#f0fdf4' : 'white',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: selectedVariant?.id === variant.id ? '600' : '400',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          minWidth: '120px'
+                        }}
+                        onMouseOver={(e) => {
+                          if (selectedVariant?.id !== variant.id) {
+                            e.currentTarget.style.borderColor = '#4CAF50';
+                            e.currentTarget.style.backgroundColor = '#fafafa';
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (selectedVariant?.id !== variant.id) {
+                            e.currentTarget.style.borderColor = '#ddd';
+                            e.currentTarget.style.backgroundColor = 'white';
+                          }
+                        }}
+                      >
+                        <span style={{ fontWeight: '600' }}>{variant.variantKey || variant.name}</span>
+                        {variant.stock !== undefined && variant.stock !== null && (
+                          <span style={{ 
+                            fontSize: '12px', 
+                            color: variant.stock > 0 ? '#10b981' : '#ef4444',
+                            marginTop: '4px'
+                          }}>
+                            {variant.stock > 0 ? `In Stock` : 'Out of Stock'}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {selectedVariant && (
+                    <div style={{ 
+                      marginTop: '12px', 
+                      padding: '10px', 
+                      backgroundColor: '#f0f9ff', 
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      color: '#0369a1'
+                    }}>
+                      ✓ Selected: <strong>{selectedVariant.variantKey || selectedVariant.name}</strong>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="product_quantity_row">
                 <label htmlFor="quantity" className="product_qty_label">Quantity:</label>
                 <input
@@ -245,7 +357,9 @@ export default function ProductDetail() {
           <div className="product_details_col">
             <h1 className="product_name">{product.name}</h1>
             <hr className="product_name_hr" />
-            <h2 className="product_price">${parseFloat(product.price || 0).toFixed(2)}</h2>
+            <h2 className="product_price">
+              ${parseFloat(product.price || 0).toFixed(2)}
+            </h2>
             
             {/* Main Description */}
             {product.description && (

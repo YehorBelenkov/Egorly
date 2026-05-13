@@ -1,0 +1,152 @@
+/* Fortune Wheel Component Styles */
+
+.fortune-wheel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.fortune-wheel-wrapper {
+  position: relative;
+}
+
+/* Winner Arrow Pointer */
+.wheel-arrow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -100px;
+}
+
+.wheel-arrow-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wheel-arrow-label {
+  color: white;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  padding: 0.75rem 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4),
+              0 4px 12px rgba(255, 165, 0, 0.3);
+  white-space: nowrap;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4),
+                0 4px 12px rgba(255, 165, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 12px 35px rgba(255, 215, 0, 0.6),
+                0 6px 16px rgba(255, 165, 0, 0.5);
+  }
+}
+
+.wheel-arrow-svg {
+  filter: drop-shadow(0 8px 20px rgba(255, 215, 0, 0.5));
+}
+
+/* SVG Container */
+.wheel-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Spin Button */
+.wheel-spin-button {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.wheel-button {
+  padding: 1rem 3rem;
+  background: linear-gradient(to bottom, #6579FE, #3C57FF);
+  color: white;
+  font-weight: bold;
+  font-size: 1.25rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: scale(1);
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.wheel-button:hover:not(:disabled) {
+  background: linear-gradient(to bottom, #7A90FF, #455AFF);
+  transform: scale(1.05);
+}
+
+.wheel-button:disabled {
+  background: linear-gradient(to bottom, #9ca3af, #6b7280);
+  cursor: not-allowed;
+  transform: scale(1);
+}
+
+/* Winner Display */
+.wheel-winner-display {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24rem;
+}
+
+.wheel-winner-card {
+  background: linear-gradient(to bottom right, #6F78EA, #435AF8);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  border: 2px solid #8291f2;
+  animation: bounce 1s infinite;
+}
+
+.wheel-winner-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.wheel-winner-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* SVG Text Styles */
+.circ-title {
+  fill: white;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.circl-desc {
+  fill: white;
+  font-size: 18px;
+}

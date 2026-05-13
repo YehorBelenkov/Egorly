@@ -1,22 +1,18 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import Layout from "../app/components/Layout";
 import Head from "next/head";
 import "./index.css";
 import { app } from "../lib/firebaseConfig";
-import { getGuestSession, getGuestCart, saveGuestCart } from "../lib/guestUser";
 import {
   getFirestore,
-  doc,
-  getDoc,
-  setDoc,
   collection,
   getDocs,
 } from "firebase/firestore";
 
 export default function Home() {
+  const router = useRouter();
   const [products, setProducts] = useState([]);
-  const [loadingIds, setLoadingIds] = useState([]); // track which product ids are being saved
-  const [toast, setToast] = useState(null); // {type: 'success'|'error', message: ''}
 
   useEffect(() => {
     const db = getFirestore(app);
@@ -36,75 +32,6 @@ export default function Home() {
 
     fetchProducts();
   }, []);
-
-  const addToCart = async (product, user) => {
-    const db = getFirestore(app);
-    
-    try {
-      setLoadingIds((s) => [...s, product.id]);
-      let items = [];
-
-      if (user) {
-        // Logged-in user - use Firestore
-        const cartRef = doc(db, `users/${user.uid}/cart/default`);
-        const cartSnap = await getDoc(cartRef);
-        if (cartSnap.exists()) {
-          items = cartSnap.data().items || [];
-        }
-
-        const existingIndex = items.findIndex((item) => item.id === product.id);
-        if (existingIndex !== -1) {
-          items[existingIndex].quantity += 1;
-        } else {
-          items.push({
-            ...product,
-            quantity: 1,
-            addedAt: new Date().toISOString(),
-          });
-        }
-
-        await setDoc(cartRef, {
-          items,
-          updatedAt: new Date().toISOString(),
-        });
-      } else {
-        // Guest user - use localStorage only
-        await getGuestSession(); // Ensure guest session exists
-        const cartData = getGuestCart();
-        items = cartData.items || [];
-
-        const existingIndex = items.findIndex((item) => item.id === product.id);
-        if (existingIndex !== -1) {
-          items[existingIndex].quantity += 1;
-        } else {
-          items.push({
-            ...product,
-            quantity: 1,
-            addedAt: new Date().toISOString(),
-          });
-        }
-
-        saveGuestCart({
-          items,
-          updatedAt: new Date().toISOString()
-        });
-      }
-
-      setToast({ type: "success", message: `${product.name} added to cart.` });
-    } catch (err) {
-      console.error("Error updating cart:", err);
-      setToast({ type: "error", message: "Failed to add to cart. Try again." });
-    } finally {
-      setLoadingIds((s) => s.filter((id) => id !== product.id));
-    }
-  };
-
-  // auto-dismiss toast after 3.5s and cleanup on unmount or when toast changes
-  useEffect(() => {
-    if (!toast) return;
-    const id = setTimeout(() => setToast(null), 3500);
-    return () => clearTimeout(id);
-  }, [toast]);
 
   return (
     <Layout>
@@ -191,25 +118,15 @@ export default function Home() {
                   </a>
                   <button
                     className="cart_btn"
-                    onClick={() => addToCart(product, user)}
-                    disabled={product.soldOut || loadingIds.includes(product.id)}
+                    onClick={() => router.push(`/product/${product.id}`)}
+                    disabled={product.soldOut}
                   >
-                    {product.soldOut
-                      ? "Sold Out"
-                      : loadingIds.includes(product.id)
-                      ? "Adding..."
-                      : "Add to Cart"}
+                    {product.soldOut ? "Sold Out" : "View Product"}
                   </button>
                 </div>
               ))}
             </div>
           </div>
-            {/* Toast */}
-            {toast && (
-              <div className={`site_toast ${toast.type === 'success' ? 'toast_success' : 'toast_error'}`}>
-                {toast.message}
-              </div>
-            )}
         </>
       )}
     </Layout>

@@ -306,3 +306,60 @@
         font-size: 1.3rem;
     }
 }
+
+/* Iframe Page Styles */
+.iframe-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: calc(100vh - 40px);
+}
+
+.iframe-header {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.iframe-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.iframe-header p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #64748b;
+}
+
+.admin-content-iframe {
+    flex: 1;
+    width: 100%;
+    min-height: 800px;
+    border: none;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .iframe-header {
+        padding: 1.5rem;
+    }
+
+    .iframe-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .iframe-header p {
+        font-size: 1rem;
+    }
+
+    .admin-content-iframe {
+        min-height: 600px;
+    }
+}

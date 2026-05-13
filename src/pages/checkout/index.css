@@ -127,7 +127,6 @@
         0 2px 8px rgba(0, 89, 170, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.3);
     position: relative;
-    overflow: hidden;
 }
 
 .checkout_form::before {
@@ -228,6 +227,7 @@
 
 .address_field {
     position: relative;
+    overflow: visible;
 }
 
 .validation_check {
@@ -248,6 +248,63 @@
     margin-top: 1rem;
     font-size: 14px;
     color: #0059AA;
+}
+
+/* Delivery Estimate */
+.delivery_estimate {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border: 1px solid #4caf50;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.delivery_estimate.loading {
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    border-color: #ff9800;
+}
+
+.delivery_estimate .estimate_icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.delivery_estimate .estimate_info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.delivery_estimate .estimate_info strong {
+    color: #2e7d32;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.delivery_estimate .estimate_method {
+    color: #558b2f;
+    font-size: 13px;
+}
+
+.delivery_estimate.loading span {
+    color: #e65100;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Shipping Options */
@@ -584,6 +641,17 @@
     font-size: 14px;
 }
 
+.included_note {
+    color: #4caf50 !important;
+    font-weight: 500 !important;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.shipping_note {
+    opacity: 0.8;
+}
+
 .shipping_method {
     font-size: 12px;
     padding: 0.5rem 0;
@@ -895,17 +963,15 @@
 /* Google Places Autocomplete Styling */
 .pac-container {
     background-color: #fff !important;
-    position: absolute !important;
+    position: fixed !important;
     z-index: 10000 !important;
     border-radius: 12px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
-    margin-top: 4px !important;
+    margin-top: 8px !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     border: 2px solid rgba(0, 89, 170, 0.2) !important;
-    overflow: hidden !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    overflow-y: auto !important;
+    max-height: 400px !important;
 }
 
 .pac-container:after {

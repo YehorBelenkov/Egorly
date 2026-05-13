@@ -880,6 +880,17 @@ body {
   line-height: 1.4;
 }
 
+.included-text {
+  color: #4caf50 !important;
+  font-weight: 500 !important;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.shipping-note {
+  opacity: 0.9;
+}
+
 .total {
   font-family: 'Poppins', sans-serif;
   display: flex;
@@ -1065,6 +1076,71 @@ body {
   font-weight: 400;
   color: #333;
   word-break: break-all;
+}
+
+/* Delivery Estimate Card */
+.delivery-estimate-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.delivery-estimate-card .estimate-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.delivery-estimate-card .estimate-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.delivery-estimate-card .estimate-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2e7d32;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.delivery-estimate-card .estimate-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1b5e20;
+}
+
+.delivery-estimate-card .estimate-method {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #558b2f;
+}
+
+.delivery-estimate-card .estimate-cost {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f57c00;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Mobile responsiveness for shipping address */

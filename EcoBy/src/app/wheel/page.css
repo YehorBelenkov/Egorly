@@ -1,0 +1,217 @@
+/* Wheel Page Styles */
+
+.wheel-page-container {
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.wheel-page-content {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.wheel-back-button {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 2rem;
+  background: rgba(31, 41, 55, 0.9);
+  backdrop-filter: blur(8px);
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  z-index: 10;
+}
+
+.wheel-back-button:hover {
+  background: rgba(55, 65, 81, 0.9);
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+/* Celebration Modal */
+.celebration-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.celebration-content {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2rem;
+  padding: 3rem 4rem;
+  text-align: center;
+  box-shadow: 0 25px 100px rgba(102, 126, 234, 0.5),
+              0 10px 50px rgba(118, 75, 162, 0.3);
+  animation: slideUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.celebration-icon {
+  font-size: 6rem;
+  margin-bottom: 1rem;
+  animation: bounce 1s infinite;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+.celebration-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: white;
+  margin-bottom: 1rem;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.02em;
+}
+
+.winner-name {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #FFD700;
+  margin: 1.5rem 0;
+  text-shadow: 0 6px 30px rgba(255, 215, 0, 0.5),
+               0 0 60px rgba(255, 215, 0, 0.3);
+  animation: glow 2s ease-in-out infinite;
+  letter-spacing: -0.03em;
+}
+
+.celebration-subtitle {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.prize-name {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #FFD700;
+  margin: 1rem 0;
+  text-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+}
+
+.prize-value {
+  font-size: 1.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.roll-prize-button {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #1a202c;
+  font-size: 1.8rem;
+  font-weight: 900;
+  padding: 1.25rem 3rem;
+  border: none;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.roll-prize-button:hover {
+  transform: scale(1.1) translateY(-5px);
+  box-shadow: 0 15px 60px rgba(255, 215, 0, 0.6);
+}
+
+.roll-prize-button:active {
+  transform: scale(1.05);
+}
+
+/* Confetti */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -10px;
+  opacity: 0.8;
+  animation: confettiFall linear forwards;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    text-shadow: 0 6px 30px rgba(255, 215, 0, 0.5),
+                 0 0 60px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    text-shadow: 0 6px 40px rgba(255, 215, 0, 0.8),
+                 0 0 80px rgba(255, 215, 0, 0.6);
+  }
+}
+
+@keyframes confettiFall {
+  to {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}

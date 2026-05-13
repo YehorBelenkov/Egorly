@@ -44,11 +44,31 @@ export default async function handler(req, res) {
       const decodedToken = await verifyAdmin(token);
 
       // Extract product data from request body
-      const { name, price, imageUrls, quantity, description, descriptionSections, attributes, packingList } = req.body;
+      const { 
+        name, 
+        price, 
+        imageUrls, 
+        quantity, 
+        cjProductId,
+        variants,
+        description, 
+        descriptionSections, 
+        attributes, 
+        packingList, 
+        videoUrl 
+      } = req.body;
 
-      // Only name, price, and quantity are required - rest is optional
-      if (!name || !price || !quantity) {
-        return res.status(400).json({ error: 'Missing required fields: name, price, or quantity' });
+      console.log('Received product data:', { name, price, quantity, cjProductId, variantsCount: variants?.length });
+
+      // Validate required fields
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({ error: 'Missing or invalid name' });
+      }
+      if (!price || isNaN(price) || price <= 0) {
+        return res.status(400).json({ error: 'Missing or invalid price' });
+      }
+      if (!quantity || isNaN(quantity) || quantity < 0) {
+        return res.status(400).json({ error: 'Missing or invalid quantity' });
       }
 
       // Create a unique product ID based on the timestamp (or you can use a Firestore-generated ID)
@@ -57,11 +77,14 @@ export default async function handler(req, res) {
         name,
         price,
         quantity,
+        cjProductId: cjProductId || null, // CJ Dropshipping Product ID
+        variants: variants || [], // Array of selected variants with custom images
         description: description || '', // Optional main description
         descriptionSections: descriptionSections || [], // Array of {title, content}
         attributes: attributes || [], // Array of {key, value}
         packingList: packingList || [], // Array of items included
         imageUrls: imageUrls || [], // Array of image URLs
+        videoUrl: videoUrl || null, // Optional video URL
         createdAt: new Date().toISOString(),
         uid: decodedToken.uid,
         admin: decodedToken.isAdmin || false,

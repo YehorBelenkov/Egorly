@@ -22,6 +22,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-square-web-payments-sdk": "^3.2.4-beta.1",
+    "resend": "^6.12.3",
     "square": "^43.2.0",
     "stripe": "^17.4.0"
   },
