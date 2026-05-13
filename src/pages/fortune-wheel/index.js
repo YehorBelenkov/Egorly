@@ -3,7 +3,6 @@ import { auth } from '../../lib/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import Layout from "../../app/components/Layout";
-import "./index.css";
 
 const FortuneWheelAdmin = () => {
   const [loading, setLoading] = useState(true);

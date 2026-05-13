@@ -238,7 +238,7 @@ export default async function handler(req, res) {
         <div class="email-container">
           <!-- Header -->
           <div class="header">
-            <img src="https://egorly.com/images/Egorly.jpg" alt="Egorly Logo" class="logo">
+            <img src="https://firebasestorage.googleapis.com/v0/b/ecoby-73116.firebasestorage.app/o/Egorly.jpg?alt=media&token=513ff7b1-8db1-49b9-b25d-814b9c5d83e5" alt="Egorly Logo" class="logo">
             <h1 class="header-title">Egorly</h1>
             <p class="header-subtitle">Premium Quality Products</p>
           </div>

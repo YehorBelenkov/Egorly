@@ -27,7 +27,7 @@ export default function TestInvoice() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerEmail: 'yehorbelenkov@gmail.com',
+          customerEmail: 'lidiiabelenkova@gmail.com',
           customerName: testData.customerInfo.fullName || 'Test Customer',
           orderId: `TEST-${Date.now()}`,
           orderNumber: `TEST-ORDER-${Date.now()}`,
@@ -48,7 +48,7 @@ export default function TestInvoice() {
       
       if (result.success) {
         setSent(true);
-        alert('✅ Test invoice sent to yehorbelenkov@gmail.com!');
+        alert('✅ Test invoice sent to lidiiabelenkova@gmail.com!');
       } else {
         alert('❌ Failed to send: ' + result.error);
       }
@@ -135,7 +135,7 @@ export default function TestInvoice() {
               opacity: sending ? 0.7 : 1
             }}
           >
-            {sending ? '📤 Sending...' : sent ? '✅ Sent!' : '📨 Send Test to yehorbelenkov@gmail.com'}
+            {sending ? '📤 Sending...' : sent ? '✅ Sent!' : '📨 Send Test to lidiiabelenkova@gmail.com'}
           </button>
 
           <button
@@ -176,7 +176,7 @@ function InvoicePreview({ data, totals }) {
         textAlign: 'center'
       }}>
         <img 
-          src="/images/Egorly.jpg" 
+          src="https://firebasestorage.googleapis.com/v0/b/ecoby-73116.firebasestorage.app/o/Egorly.jpg?alt=media&token=513ff7b1-8db1-49b9-b25d-814b9c5d83e5" 
           alt="Egorly Logo" 
           style={{ maxWidth: '150px', height: 'auto', marginBottom: '20px' }}
         />
