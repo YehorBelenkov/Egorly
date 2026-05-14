@@ -32,6 +32,8 @@ export default function ProductDetail() {
   const [added, setAdded] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0); // Track selected image index
   const [selectedVariant, setSelectedVariant] = useState(null); // Track selected variant
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -62,6 +64,59 @@ export default function ProductDetail() {
   const handleQuantityChange = (e) => {
     const val = Math.max(1, parseInt(e.target.value) || 1);
     setQuantity(val);
+  };
+
+  // Swipe handlers for mobile image gallery
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    // Build combined image array to get total count
+    let allImages = [];
+    if (product.imageUrls && product.imageUrls.length > 0) {
+      allImages = [...allImages, ...product.imageUrls];
+    }
+    if (product.variants && product.variants.length > 0) {
+      product.variants.forEach(variant => {
+        if (variant.customImageUrls && variant.customImageUrls.length > 0) {
+          allImages = [...allImages, ...variant.customImageUrls];
+        }
+      });
+    }
+    const totalImages = allImages.length + (product.videoUrl ? 1 : 0);
+
+    if (isLeftSwipe && selectedImage !== 'video') {
+      // Swipe left - next image
+      const nextIndex = selectedImage + 1;
+      if (nextIndex < allImages.length) {
+        setSelectedImage(nextIndex);
+      } else if (product.videoUrl) {
+        setSelectedImage('video');
+      }
+    }
+
+    if (isRightSwipe) {
+      // Swipe right - previous image
+      if (selectedImage === 'video') {
+        setSelectedImage(allImages.length - 1);
+      } else if (selectedImage > 0) {
+        setSelectedImage(selectedImage - 1);
+      }
+    }
   };
 
   const handleAddToCart = async (user) => {
@@ -245,9 +300,15 @@ export default function ProductDetail() {
               })()}
               
               {/* Main product image or video */}
-              <div className="main_image_wrapper">
+              <div 
+                className="main_image_wrapper"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+              >
                 {selectedImage === 'video' && product.videoUrl ? (
                   <video 
+                    key="video"
                     className="product_image"
                     controls
                     autoPlay
@@ -277,6 +338,7 @@ export default function ProductDetail() {
                   
                   return (
                     <img
+                      key={selectedImage}
                       className="product_image"
                       src={allImages[selectedImage] || product.imageUrl || '/placeholder.png'}
                       alt={product.name || 'Product Image'}
@@ -284,6 +346,43 @@ export default function ProductDetail() {
                   );
                 })()}
               </div>
+              
+              {/* Pagination Dots for Mobile */}
+              {isMobile && (() => {
+                let allImages = [];
+                if (product.imageUrls && product.imageUrls.length > 0) {
+                  allImages = [...allImages, ...product.imageUrls];
+                }
+                if (product.variants && product.variants.length > 0) {
+                  product.variants.forEach(variant => {
+                    if (variant.customImageUrls && variant.customImageUrls.length > 0) {
+                      allImages = [...allImages, ...variant.customImageUrls];
+                    }
+                  });
+                }
+                const totalImages = allImages.length + (product.videoUrl ? 1 : 0);
+                
+                return totalImages > 1 && (
+                  <div className="pagination_dots">
+                    {allImages.map((_, index) => (
+                      <button
+                        key={`dot-${index}`}
+                        className={`pagination_dot ${selectedImage === index ? 'active' : ''}`}
+                        onClick={() => setSelectedImage(index)}
+                        aria-label={`View image ${index + 1}`}
+                      />
+                    ))}
+                    {product.videoUrl && (
+                      <button
+                        key="dot-video"
+                        className={`pagination_dot ${selectedImage === 'video' ? 'active' : ''}`}
+                        onClick={() => setSelectedImage('video')}
+                        aria-label="View video"
+                      />
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             
             {/* Add to Cart Section */}
