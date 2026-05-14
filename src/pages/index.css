@@ -1027,13 +1027,13 @@
 
 @media (max-width: 600px) {
     .welcome_content {
-        padding-top: 10rem;
+        padding-top: 6rem;
         height: auto;
         min-height: 100vh;
     }
 
     .stream_button {
-        top: 115px;
+        top: 70px;
         bottom: auto;
         left: 10px;
         right: 10px;
@@ -1046,7 +1046,7 @@
     }
 
     .live_banner {
-        top: 65px;
+        top: 20px;
         bottom: auto;
         right: 10px;
         left: 10px;
