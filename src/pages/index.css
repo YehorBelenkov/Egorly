@@ -428,7 +428,7 @@
     gap: 1.5rem;
     margin-top: 4rem;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
     z-index: 2;
     flex-wrap: wrap;
     max-width: 900px;
@@ -473,6 +473,8 @@
     border-radius: 16px;
     padding: 1.5rem 2rem;
     min-width: 180px;
+    flex: 1 1 200px;
+    max-width: 220px;
     opacity: 0;
     animation: fadeInUp 0.6s ease forwards, colorPulse 8s ease-in-out infinite;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1025,7 +1027,7 @@
 
 @media (max-width: 600px) {
     .stream_button {
-        top: 60px;
+        top: 120px;
         left: 10px;
         right: 10px;
         padding: 0.65rem 1rem;
@@ -1037,7 +1039,7 @@
     }
 
     .live_banner {
-        top: 10px;
+        top: 70px;
         right: 10px;
         left: 10px;
         padding: 0.65rem 1rem;
@@ -1076,12 +1078,15 @@
 
     .hero_features {
         gap: 1rem;
-        margin-top: 2.5rem;
+        margin-top: 3.5rem;
+        margin-bottom: 2.5rem;
     }
 
     .feature_card {
         padding: 1.25rem 1.5rem;
         min-width: 150px;
+        flex: 1 1 150px;
+        max-width: 180px;
     }
 
     .feature_title {
@@ -1163,64 +1168,64 @@
 
 @media (max-width: 480px) {
     .product_display {
-        grid-template-columns: 1fr;
-        gap: 1.25rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
     
     .product_container {
-        min-height: 500px;
+        min-height: 420px;
         max-width: 100%;
         margin: 0;
-        border-radius: 16px;
+        border-radius: 14px;
     }
 
     .prod_img {
-        height: 260px;
+        height: 200px;
     }
     
     .info_prod {
-        padding: 1.25rem;
-        min-height: 160px;
+        padding: 1rem;
+        min-height: 150px;
     }
 
     .oz_g {
-        padding: 0.45rem 0.8rem;
-        font-size: 0.7rem;
-        top: 0.75rem;
-        left: 0.75rem;
+        padding: 0.35rem 0.6rem;
+        font-size: 0.6rem;
+        top: 0.5rem;
+        left: 0.5rem;
     }
 
     .prod_name {
-        font-size: 1.2rem;
-        min-height: 2.4rem;
+        font-size: 1rem;
+        min-height: 2rem;
     }
 
     .prod_small_des {
-        font-size: 0.95rem;
-        -webkit-line-clamp: 3;
-        min-height: 4.3rem;
+        font-size: 0.8rem;
+        -webkit-line-clamp: 2;
+        min-height: 2.5rem;
     }
 
     .current_price {
-        font-size: 1.75rem;
+        font-size: 1.4rem;
     }
 
     .original_price {
-        font-size: 1.15rem;
+        font-size: 1rem;
     }
 
     .discounted_price {
-        font-size: 1.75rem;
+        font-size: 1.4rem;
     }
 
     .discount_badge {
-        font-size: 0.7rem;
-        padding: 0.3rem 0.65rem;
+        font-size: 0.6rem;
+        padding: 0.25rem 0.5rem;
     }
 
     .cart_btn {
-        padding: 1.1rem;
-        font-size: 1rem;
-        border-radius: 0 0 16px 16px;
+        padding: 0.9rem;
+        font-size: 0.9rem;
+        border-radius: 0 0 14px 14px;
     }
 }
