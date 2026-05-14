@@ -306,45 +306,88 @@ export default function ProductDetail() {
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
               >
-                {selectedImage === 'video' && product.videoUrl ? (
-                  <video 
-                    key="video"
-                    className="product_image"
-                    controls
-                    autoPlay
-                  >
-                    <source src={product.videoUrl} type="video/mp4" />
-                    <source src={product.videoUrl} type="video/webm" />
-                    <source src={product.videoUrl} type="video/ogg" />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (() => {
-                  // Build combined image array: product images first, then variant images
-                  let allImages = [];
-                  
-                  // Add product images first
-                  if (product.imageUrls && product.imageUrls.length > 0) {
-                    allImages = [...allImages, ...product.imageUrls];
-                  }
-                  
-                  // Add images from ALL variants
-                  if (product.variants && product.variants.length > 0) {
-                    product.variants.forEach(variant => {
-                      if (variant.customImageUrls && variant.customImageUrls.length > 0) {
-                        allImages = [...allImages, ...variant.customImageUrls];
-                      }
-                    });
-                  }
-                  
-                  return (
-                    <img
-                      key={selectedImage}
+                {isMobile ? (
+                  // Mobile: Carousel with smooth sliding
+                  (() => {
+                    // Build combined image array
+                    let allImages = [];
+                    if (product.imageUrls && product.imageUrls.length > 0) {
+                      allImages = [...allImages, ...product.imageUrls];
+                    }
+                    if (product.variants && product.variants.length > 0) {
+                      product.variants.forEach(variant => {
+                        if (variant.customImageUrls && variant.customImageUrls.length > 0) {
+                          allImages = [...allImages, ...variant.customImageUrls];
+                        }
+                      });
+                    }
+                    
+                    const currentIndex = selectedImage === 'video' ? allImages.length : selectedImage;
+                    const translateX = -currentIndex * 100;
+                    
+                    return (
+                      <div className="image_carousel_track" style={{ transform: `translateX(${translateX}%)` }}>
+                        {allImages.map((img, index) => (
+                          <div key={`slide-${index}`} className="carousel_image_slide">
+                            <img
+                              src={img}
+                              alt={`${product.name} ${index + 1}`}
+                            />
+                          </div>
+                        ))}
+                        {product.videoUrl && (
+                          <div key="slide-video" className="carousel_image_slide">
+                            <video 
+                              controls
+                              preload="metadata"
+                            >
+                              <source src={product.videoUrl} type="video/mp4" />
+                              <source src={product.videoUrl} type="video/webm" />
+                              <source src={product.videoUrl} type="video/ogg" />
+                              Your browser does not support the video tag.
+                            </video>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()
+                ) : (
+                  // Desktop: Single image display
+                  selectedImage === 'video' && product.videoUrl ? (
+                    <video 
+                      key="video"
                       className="product_image"
-                      src={allImages[selectedImage] || product.imageUrl || '/placeholder.png'}
-                      alt={product.name || 'Product Image'}
-                    />
-                  );
-                })()}
+                      controls
+                      preload="metadata"
+                    >
+                      <source src={product.videoUrl} type="video/mp4" />
+                      <source src={product.videoUrl} type="video/webm" />
+                      <source src={product.videoUrl} type="video/ogg" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (() => {
+                    let allImages = [];
+                    if (product.imageUrls && product.imageUrls.length > 0) {
+                      allImages = [...allImages, ...product.imageUrls];
+                    }
+                    if (product.variants && product.variants.length > 0) {
+                      product.variants.forEach(variant => {
+                        if (variant.customImageUrls && variant.customImageUrls.length > 0) {
+                          allImages = [...allImages, ...variant.customImageUrls];
+                        }
+                      });
+                    }
+                    
+                    return (
+                      <img
+                        key={selectedImage}
+                        className="product_image"
+                        src={allImages[selectedImage] || product.imageUrl || '/placeholder.png'}
+                        alt={product.name || 'Product Image'}
+                      />
+                    );
+                  })()
+                )}
               </div>
               
               {/* Pagination Dots for Mobile */}
@@ -362,7 +405,7 @@ export default function ProductDetail() {
                 }
                 const totalImages = allImages.length + (product.videoUrl ? 1 : 0);
                 
-                return totalImages > 1 && (
+                return totalImages > 0 && (
                   <div className="pagination_dots">
                     {allImages.map((_, index) => (
                       <button
