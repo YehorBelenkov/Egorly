@@ -127,6 +127,7 @@
         0 2px 8px rgba(0, 89, 170, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.3);
     position: relative;
+    overflow: hidden;
 }
 
 .checkout_form::before {
@@ -551,6 +552,15 @@
     gap: 1rem;
     padding: 1rem 0;
     border-bottom: 1px solid #f8f9fa;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 0 -0.5rem;
+    padding: 1rem 0.5rem;
+}
+
+.summary_item:hover {
+    background: #f8f9fa;
+    transform: translateX(4px);
 }
 
 .summary_item:last-child {

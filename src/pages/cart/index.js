@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import Layout from '../../app/components/Layout'
+import LiveBanner from '../../app/components/LiveBanner'
 import Head from 'next/head'
 import '../../pages/index.css'
 import './cart.css'
 import { app } from '../../lib/firebaseConfig'
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
 import { getGuestSession, getGuestCart, saveGuestCart } from '../../lib/guestUser'
+import { getIsLive, calculateLivePrice } from '../../lib/liveStatus'
 
 function getItemKey(item){
   return item.id ?? item.productId ?? item.productIdString ?? null
@@ -16,6 +18,7 @@ function CartInner({ user }){
   const [loadingIds, setLoadingIds] = useState([])
   const [toast, setToast] = useState(null)
   const [guestId, setGuestId] = useState(null)
+  const [isLive, setIsLive] = useState(false)
 
   useEffect(()=>{
     const fetchCart = async ()=>{
@@ -51,6 +54,10 @@ function CartInner({ user }){
     const t = setTimeout(()=> setToast(null), 3500)
     return ()=> clearTimeout(t)
   }, [toast])
+
+  useEffect(() => {
+    setIsLive(getIsLive());
+  }, []);
 
   const saveCart = async (items)=>{
     try{
@@ -98,10 +105,15 @@ function CartInner({ user }){
     await saveCart([])
   }
 
-  const subtotal = cart.items.reduce((s, it) => s + (parseFloat(it.price || 0) * (it.quantity || 0)), 0)
+  let subtotal = cart.items.reduce((s, it) => s + (parseFloat(it.price || 0) * (it.quantity || 0)), 0)
+  const originalSubtotal = subtotal;
+  if (isLive) {
+    subtotal = calculateLivePrice(subtotal);
+  }
 
   return (
     <>
+      <LiveBanner />
       <div className="cart_wrapper">
         <div className="cart_container">
           <div className="cart_header">
@@ -130,11 +142,19 @@ function CartInner({ user }){
                   const lineTotal = (parseFloat(item.price||0) * (item.quantity||1)).toFixed(2)
                   return (
                     <div className='cart_item_card' key={key}>
-                      <div className='item_image_container'>
+                      <div 
+                        className='item_image_container'
+                        onClick={() => window.location.href = `/product/${item.productId || item.id}`}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <img src={item.imageUrl || '/images/calamari_product_salt.png'} alt={item.name} />
                       </div>
                       
-                      <div className='item_details'>
+                      <div 
+                        className='item_details'
+                        onClick={() => window.location.href = `/product/${item.productId || item.id}`}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <h3 className='item_name'>{item.name}</h3>
                         <p className='item_description'>{item.description}</p>
                         <div className='item_price_mobile'>${parseFloat(item.price||0).toFixed(2)}</div>
@@ -190,7 +210,33 @@ function CartInner({ user }){
                   
                   <div className="summary_row">
                     <span>Subtotal ({cart.items.length} items)</span>
-                    <span className="summary_value">${subtotal.toFixed(2)}</span>
+                    <span className="summary_value">
+                      {isLive && (
+                        <span style={{
+                          textDecoration: 'line-through',
+                          color: '#999',
+                          marginRight: '0.5rem',
+                          fontSize: '0.9rem'
+                        }}>
+                          ${originalSubtotal.toFixed(2)}
+                        </span>
+                      )}
+                      ${subtotal.toFixed(2)}
+                      {isLive && (
+                        <span style={{
+                          background: 'linear-gradient(135deg, #ff0844 0%, #ff4d6d 100%)',
+                          color: 'white',
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: '12px',
+                          fontSize: '0.7rem',
+                          fontWeight: '700',
+                          marginLeft: '0.5rem',
+                          letterSpacing: '0.3px'
+                        }}>
+                          20% OFF
+                        </span>
+                      )}
+                    </span>
                   </div>
                   
                   <div className="summary_divider"></div>

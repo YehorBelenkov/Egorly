@@ -328,7 +328,7 @@ export default async function handler(req, res) {
             </div>
 
             <center>
-              <a href="https://egorly.com/profile/orders" class="button">Track Your Order</a>
+              <a href="https://egorly.com/profile" class="button">Track Your Order</a>
             </center>
 
             <p class="message">

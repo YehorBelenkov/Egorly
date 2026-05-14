@@ -293,6 +293,7 @@ body {
 .logo_l {
     width: 4rem;
     height: 4rem;
+    border-radius: 50%;
 }
 
 .hG {
@@ -439,6 +440,7 @@ hr {
     .logo_l {
         width: 3rem;
         height: 3rem;
+        border-radius: 50%;
     }
     
     .hG.G {

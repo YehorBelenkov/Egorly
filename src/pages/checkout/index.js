@@ -1,11 +1,12 @@
- import CheckoutNav from "../../app/components/checkout_navbar";
 import Layout from "../../app/components/Layout";
+import LiveBanner from "../../app/components/LiveBanner";
 import "./index.css";
 import Head from 'next/head';
 import { useEffect, useState, useRef } from 'react'
 import { app } from '../../lib/firebaseConfig'
 import { getFirestore, doc, getDoc, collection, getDocs } from 'firebase/firestore'
 import { getGuestSession, getGuestCart } from '../../lib/guestUser'
+import { getIsLive, calculateLivePrice } from '../../lib/liveStatus'
 
 const GOOGLE_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
@@ -15,6 +16,7 @@ function CheckoutInner({ user }) {
     const [subtotal, setSubtotal] = useState(0)
     const [toast, setToast] = useState(null)
     const [guestId, setGuestId] = useState(null)
+    const [isLive, setIsLive] = useState(false)
 
     // saved addresses
     const [savedAddresses, setSavedAddresses] = useState([])
@@ -39,6 +41,11 @@ function CheckoutInner({ user }) {
     const addressRef = useRef(null)
     const autocompleteRef = useRef(null)
 
+    // Check if live
+    useEffect(() => {
+        setIsLive(getIsLive());
+    }, []);
+
     // auto-dismiss toast
     useEffect(()=>{
         if(!toast) return
@@ -48,9 +55,13 @@ function CheckoutInner({ user }) {
 
     // compute subtotal
     useEffect(()=>{
-        const s = cart.items.reduce((acc, it) => acc + (parseFloat(it.price||0) * (it.quantity||0)), 0)
+        let s = cart.items.reduce((acc, it) => acc + (parseFloat(it.price||0) * (it.quantity||0)), 0)
+        // Apply live discount if streaming
+        if (isLive) {
+            s = calculateLivePrice(s);
+        }
         setSubtotal(s)
-    },[cart.items])
+    },[cart.items, isLive])
 
     useEffect(()=>{
         const fetchCart = async ()=>{
@@ -386,11 +397,11 @@ function CheckoutInner({ user }) {
 
     return (
         <>
-            <CheckoutNav/>
             <Head>
                 <title>Secure Checkout - Egorly</title>
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@500;600;700&display=swap" rel="stylesheet"/>
             </Head>
+            <LiveBanner />
 
             <div className="checkout_wrapper">
                 <div className="checkout_container">
@@ -621,7 +632,12 @@ function CheckoutInner({ user }) {
                             <div className="summary_items">
                                 {cart.items && cart.items.length > 0 ? (
                                     cart.items.map((it, index) => (
-                                        <div className="summary_item" key={it.variant?.id || `${it.productId}-${index}`}>
+                                        <div 
+                                            className="summary_item" 
+                                            key={it.variant?.id || `${it.productId}-${index}`}
+                                            onClick={() => window.location.href = `/product/${it.productId || it.id}`}
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                             <div className="item_image">
                                                 <img src={it.imageUrl || it.image || '/images/calamari_product_salt.png'} alt={it.name || it.title || 'product'} />
                                                 <span className="item_quantity">{it.quantity || 1}</span>
@@ -646,7 +662,33 @@ function CheckoutInner({ user }) {
                             <div className="summary_calculations">
                                 <div className="calc_row">
                                     <span>Subtotal</span>
-                                    <span>${subtotal.toFixed(2)}</span>
+                                    <span>
+                                        {isLive && (
+                                            <span style={{
+                                                textDecoration: 'line-through',
+                                                color: '#999',
+                                                marginRight: '0.5rem',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                ${(cart.items.reduce((acc, it) => acc + (parseFloat(it.price||0) * (it.quantity||0)), 0)).toFixed(2)}
+                                            </span>
+                                        )}
+                                        ${subtotal.toFixed(2)}
+                                        {isLive && (
+                                            <span style={{
+                                                background: 'linear-gradient(135deg, #ff0844 0%, #ff4d6d 100%)',
+                                                color: 'white',
+                                                padding: '0.2rem 0.5rem',
+                                                borderRadius: '12px',
+                                                fontSize: '0.7rem',
+                                                fontWeight: '700',
+                                                marginLeft: '0.5rem',
+                                                letterSpacing: '0.3px'
+                                            }}>
+                                                20% OFF
+                                            </span>
+                                        )}
+                                    </span>
                                 </div>
                                 <div className="calc_row shipping_note">
                                     <span>Shipping</span>

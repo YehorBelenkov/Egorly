@@ -34,7 +34,7 @@ export default function ResetPassword() {
     <div className='login-bg'>
       <form className='login_container' onSubmit={handleReset}>
         <div className='login_con_log'>
-          <img className="logo_l" src="/images/bariga_logo.png" alt="Logo" />
+          <img className="logo_l" src="/images/Egorly.jpg" alt="Egorly Logo" />
           <h1 className='hG'>Reset Password</h1>
         </div>
         <div className='txt_container'>

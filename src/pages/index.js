@@ -13,6 +13,7 @@ import {
 export default function Home() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
+  const [isLive, setIsLive] = useState(true); // TODO: Connect to actual TikTok live status
 
   useEffect(() => {
     const db = getFirestore(app);
@@ -38,47 +39,111 @@ export default function Home() {
       {(user) => (
         <>
           <Head>
-            <link rel="icon" href="/images/bariga_logo.png" />
-            <title>{"Egorly"}</title>
+            <link rel="icon" href="/images/Egorly.jpg" />
+            <title>{"Egorly - Where Gaming Meets Giveaways"}</title>
             <meta
               name="description"
-              content="Explore a world of premium dried calamari and sea food snacks..."
+              content="Join our live gaming streams on TikTok! Get 20% off sitewide when we're live, spin the fortune wheel for prizes, and shop exclusive products!"
             />
           </Head>
 
           <div className="welcome_container">
+            {/* Watch Stream Button */}
+            <a 
+              href="https://www.tiktok.com/@yourusername" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="stream_button"
+            >
+              <span className="stream_button_text">Watch Us Live on TikTok</span>
+              <div className="stream_particles">
+                <span className="particle"></span>
+                <span className="particle"></span>
+                <span className="particle"></span>
+                <span className="particle"></span>
+                <span className="particle"></span>
+              </div>
+            </a>
+
+            {/* LIVE NOW Banner */}
+            {isLive && (
+              <div className="live_banner">
+                <div className="live_pulse"></div>
+                <span className="live_text">🔴 LIVE NOW - 20% OFF EVERYTHING!</span>
+              </div>
+            )}
+            
+            {/* Animated Background Circles */}
+            <div className="animated-bg-circles">
+              <ul className="bg-circles">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+              </ul>
+            </div>
+            
             <div className="welcome_content">
               <div className="welcome_inner">
                 <img
                   className="welcome_logo"
-                  src="/images/bariga_logo.png"
-                  alt="Logo"
+                  src="/images/Egorly.jpg"
+                  alt="Egorly Logo"
                 />
                 <div className="welcome_txt">
-                  <h1 className="welcome_h1">Premium Dried Calamari</h1>
-                  {user ? (
-                    <p className="welcome_p">Welcome back, {user.email}!</p>
-                  ) : (
-                    <p className="welcome_p">
-                      Discover our world of premium dried calamari and seafood snacks
-                    </p>
-                  )}
-                  <a href="#products" className="explore_more_btn">Shop Now</a>
+                  <h1 className="welcome_h1">Where Gaming Meets Giveaways</h1>
+                  <p className="welcome_p">
+                    Watch me game live on TikTok, get <strong style={{color: '#ffd700'}}>20% OFF everything</strong> when I'm streaming, and spin the fortune wheel for a chance to <strong style={{color: '#ffd700'}}>win real prizes!</strong>
+                  </p>
+                  <p className="welcome_description">
+                    Every stream is a party. I'm gaming, you're watching, and everyone gets a shot at the fortune wheel. 
+                    Real prizes. Real discounts. Real community. No gimmicks—just good vibes and great deals while I conquer Deadlock, CS2, Arc Raiders, and whatever game comes next.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      document.getElementById('products')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="explore_more_btn"
+                  >
+                    Shop Now
+                  </button>
                 </div>
                 
-                {/* Simple feature icons */}
-                <div className="hero_icons">
-                  <div className="icon_item">
-                    <div className="icon_circle">🌊</div>
-                    <span>Fresh</span>
+                {/* Feature cards with effects */}
+                <div className="hero_features">
+                  <div className="feature_card">
+                    <div className="feature_glow"></div>
+                    <div className="feature_content">
+                      <div className="feature_title">Gaming Streams</div>
+                      <div className="feature_desc">Watch live gameplay</div>
+                    </div>
                   </div>
-                  <div className="icon_item">
-                    <div className="icon_circle">⚡</div>
-                    <span>Fast</span>
+                  <div className="feature_card">
+                    <div className="feature_glow"></div>
+                    <div className="feature_content">
+                      <div className="feature_title">Fortune Wheel</div>
+                      <div className="feature_desc">Spin for prizes</div>
+                    </div>
                   </div>
-                  <div className="icon_item">
-                    <div className="icon_circle">✨</div>
-                    <span>Quality</span>
+                  <div className="feature_card">
+                    <div className="feature_glow"></div>
+                    <div className="feature_content">
+                      <div className="feature_title">Win Prizes</div>
+                      <div className="feature_desc">Real rewards</div>
+                    </div>
+                  </div>
+                  <div className="feature_card">
+                    <div className="feature_glow"></div>
+                    <div className="feature_content">
+                      <div className="feature_title">20% OFF Live</div>
+                      <div className="feature_desc">When streaming</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -87,8 +152,8 @@ export default function Home() {
 
           <div className="products_container" id="products">
             <div className="section_header">
-              <h1 className="prod_h1">Our Products</h1>
-              <p className="section_subtitle">Handpicked selection of premium dried calamari</p>
+              <h1 className="prod_h1">Shop The Collection</h1>
+              <p className="section_subtitle">Quality products, unbeatable prices—especially when we're live</p>
             </div>
 
             <div className="product_display">
@@ -110,9 +175,21 @@ export default function Home() {
                       <h1 className="prod_name">{product.name}</h1>
                       <p className="prod_small_des">{product.description}</p>
                       <div className="price_display_order_con">
-                        <h1 className="current_price">
-                          ${parseFloat(product.price).toFixed(2)}
-                        </h1>
+                        {isLive ? (
+                          <>
+                            <h1 className="original_price">
+                              ${parseFloat(product.price).toFixed(2)}
+                            </h1>
+                            <h1 className="discounted_price">
+                              ${(parseFloat(product.price) * 0.8).toFixed(2)}
+                            </h1>
+                            <span className="discount_badge">20% OFF</span>
+                          </>
+                        ) : (
+                          <h1 className="current_price">
+                            ${parseFloat(product.price).toFixed(2)}
+                          </h1>
+                        )}
                       </div>
                     </div>
                   </a>

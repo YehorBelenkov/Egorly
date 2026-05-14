@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Layout from "../../app/components/Layout"
+import LiveBanner from "../../app/components/LiveBanner"
 import { app } from '../../lib/firebaseConfig'
 import { getFirestore, doc, getDoc, collection, addDoc, setDoc } from 'firebase/firestore'
 import { getGuestSession, getGuestCart, clearGuestCart } from '../../lib/guestUser'
+import { getIsLive, calculateLivePrice } from '../../lib/liveStatus'
 import { 
   CreditCard, 
   PaymentForm, 
@@ -23,6 +25,7 @@ const PaymentInner = ({ user }) => {
     const [isLoading, setIsLoading] = useState(true)
     const [showContent, setShowContent] = useState(false)
     const [guestId, setGuestId] = useState(null)
+    const [isLive, setIsLive] = useState(false)
     
     // Square configuration with working credentials
     const appId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || 'sq0idp-VeeaYnmIvbl7sdhdB7NJIw'
@@ -96,6 +99,11 @@ const PaymentInner = ({ user }) => {
         }
     }, [user])
 
+    // Check if live
+    useEffect(() => {
+        setIsLive(getIsLive());
+    }, []);
+
     // Check if Square credentials are properly configured
     const isSquareConfigured = appId && 
                                locationId && 
@@ -144,7 +152,7 @@ const PaymentInner = ({ user }) => {
         console.log('Order data:', orderData)
         console.log('Cart items:', orderData.cartItems)
         
-        const itemsTotal = orderData.cartItems.reduce((acc, item) => {
+        let itemsTotal = orderData.cartItems.reduce((acc, item) => {
             // Handle different possible price properties
             const itemPrice = item.price || item.cost || parseFloat(item.amount) || 0
             const quantity = item.quantity || item.qty || 1
@@ -152,11 +160,19 @@ const PaymentInner = ({ user }) => {
             return acc + (itemPrice * quantity)
         }, 0)
         
-        console.log('Items total:', itemsTotal)
+        console.log('Items total before discount:', itemsTotal)
         
-        const tax = itemsTotal * 0.08 // 8% tax
+        // Apply live discount if streaming
+        const originalSubtotal = itemsTotal;
+        if (isLive) {
+            itemsTotal = calculateLivePrice(itemsTotal);
+            console.log('Live discount applied. New total:', itemsTotal);
+        }
+        
+        const tax = itemsTotal * 0.08 // 8% tax on discounted price
         
         return {
+            originalSubtotal: originalSubtotal,
             subtotal: itemsTotal,
             tax: tax,
             total: itemsTotal + tax
@@ -502,6 +518,7 @@ const PaymentInner = ({ user }) => {
                 <meta name="description" content="Secure payment processing for your fish snack order" />
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
             </Head>
+            <LiveBanner />
             
             {/* Loading Screen */}
             {isLoading && (
@@ -701,7 +718,33 @@ const PaymentInner = ({ user }) => {
                         <div className="order-total">
                             <div className="subtotal">
                                 <span>Subtotal</span>
-                                <span>${totals.subtotal.toFixed(2)}</span>
+                                <span>
+                                    {isLive && (
+                                        <span style={{
+                                            textDecoration: 'line-through',
+                                            color: '#999',
+                                            marginRight: '0.5rem',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            ${totals.originalSubtotal.toFixed(2)}
+                                        </span>
+                                    )}
+                                    ${totals.subtotal.toFixed(2)}
+                                    {isLive && (
+                                        <span style={{
+                                            background: 'linear-gradient(135deg, #ff0844 0%, #ff4d6d 100%)',
+                                            color: 'white',
+                                            padding: '0.2rem 0.5rem',
+                                            borderRadius: '12px',
+                                            fontSize: '0.7rem',
+                                            fontWeight: '700',
+                                            marginLeft: '0.5rem',
+                                            letterSpacing: '0.3px'
+                                        }}>
+                                            20% OFF - LIVE!
+                                        </span>
+                                    )}
+                                </span>
                             </div>
                             <div className="subtotal shipping-note">
                                 <span>Shipping</span>

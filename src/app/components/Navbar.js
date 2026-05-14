@@ -56,7 +56,7 @@ const Navbar = ({ user, onLogout }) => {
       <div className="mobile_navbar">
         <div className="mobile_brand">
           <Link href="/">
-            <img className="mobile_logo" src="/images/bariga_logo.png" alt="Logo" />
+            <img className="mobile_logo" src="/images/Egorly.jpg" alt="Egorly Logo" />
           </Link>
         </div>
         <div className="mobile_actions">
@@ -90,29 +90,23 @@ const Navbar = ({ user, onLogout }) => {
         
         <div className="mobile_menu_links">
           <Link className="mobile_nav_link" href={"/"} onClick={closeMenu}>
-            <span className="link_icon">🏠</span>
             <span>Home</span>
           </Link>
           <Link className="mobile_nav_link" href={"/"} onClick={closeMenu}>
-            <span className="link_icon">🛍️</span>
             <span>Products</span>
           </Link>
           <Link className="mobile_nav_link" href={"/about"} onClick={closeMenu}>
-            <span className="link_icon">ℹ️</span>
             <span>About Us</span>
           </Link>
           <Link className="mobile_nav_link" href={"/winners"} onClick={closeMenu}>
-            <span className="link_icon">🏆</span>
             <span>Winners</span>
           </Link>
           <Link className="mobile_nav_link" href={"/contact"} onClick={closeMenu}>
-            <span className="link_icon">✉️</span>
             <span>Contact</span>
           </Link>
           
           {user ? (
             <Link className="mobile_nav_link" href="/profile" onClick={closeMenu}>
-              <span className="link_icon">👤</span>
               <span>My Profile</span>
             </Link>
           ) : (

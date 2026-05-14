@@ -3,17 +3,24 @@ import { useRouter } from "next/router";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { app } from "../../lib/firebaseConfig";
 import { getGuestSession, getGuestCart, saveGuestCart } from "../../lib/guestUser";
+import { getIsLive, calculateLivePrice } from "../../lib/liveStatus";
 import "./product_detail.css";
 import Layout from "../../app/components/Layout";
+import LiveBanner from "../../app/components/LiveBanner";
 
 export default function ProductDetail() {
   const [isMobile, setIsMobile] = useState(false);
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 900);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    setIsLive(getIsLive());
   }, []);
 
   const router = useRouter();
@@ -182,6 +189,8 @@ export default function ProductDetail() {
   return (
     <Layout>
       {(user) => (
+        <>
+        <LiveBanner />
         <div className="product_detail_page_wrap">
       <div className="product_detail_main">
         <div className="product_container product_container_2col" style={{fontFamily: 'Segoe UI, Arial, Helvetica Neue, sans-serif'}}>
@@ -191,13 +200,21 @@ export default function ProductDetail() {
             <div className="image_gallery_wrapper">
               {/* Thumbnail selector on the left */}
               {(() => {
-                // Build combined image array: variant custom images first, then product images
+                // Build combined image array: product images first, then variant images
                 let allImages = [];
-                if (selectedVariant && selectedVariant.customImageUrls && selectedVariant.customImageUrls.length > 0) {
-                  allImages = [...selectedVariant.customImageUrls];
-                }
+                
+                // Add product images first
                 if (product.imageUrls && product.imageUrls.length > 0) {
                   allImages = [...allImages, ...product.imageUrls];
+                }
+                
+                // Add images from ALL variants
+                if (product.variants && product.variants.length > 0) {
+                  product.variants.forEach(variant => {
+                    if (variant.customImageUrls && variant.customImageUrls.length > 0) {
+                      allImages = [...allImages, ...variant.customImageUrls];
+                    }
+                  });
                 }
                 
                 return (allImages.length > 0 || product.videoUrl) && (
@@ -241,13 +258,21 @@ export default function ProductDetail() {
                     Your browser does not support the video tag.
                   </video>
                 ) : (() => {
-                  // Build combined image array same way
+                  // Build combined image array: product images first, then variant images
                   let allImages = [];
-                  if (selectedVariant && selectedVariant.customImageUrls && selectedVariant.customImageUrls.length > 0) {
-                    allImages = [...selectedVariant.customImageUrls];
-                  }
+                  
+                  // Add product images first
                   if (product.imageUrls && product.imageUrls.length > 0) {
                     allImages = [...allImages, ...product.imageUrls];
+                  }
+                  
+                  // Add images from ALL variants
+                  if (product.variants && product.variants.length > 0) {
+                    product.variants.forEach(variant => {
+                      if (variant.customImageUrls && variant.customImageUrls.length > 0) {
+                        allImages = [...allImages, ...variant.customImageUrls];
+                      }
+                    });
                   }
                   
                   return (
@@ -275,21 +300,44 @@ export default function ProductDetail() {
                         key={variant.id}
                         onClick={() => {
                           setSelectedVariant(variant);
-                          setSelectedImage(0); // Reset to first image when variant changes
+                          
+                          // Find the index of this variant's first image in allImages
+                          let imageIndex = 0;
+                          
+                          // Start after product images
+                          if (product.imageUrls && product.imageUrls.length > 0) {
+                            imageIndex = product.imageUrls.length;
+                          }
+                          
+                          // Add images from variants before this one
+                          if (product.variants && product.variants.length > 0) {
+                            for (let i = 0; i < product.variants.length; i++) {
+                              if (product.variants[i].id === variant.id) {
+                                break;
+                              }
+                              if (product.variants[i].customImageUrls && product.variants[i].customImageUrls.length > 0) {
+                                imageIndex += product.variants[i].customImageUrls.length;
+                              }
+                            }
+                          }
+                          
+                          setSelectedImage(imageIndex);
                         }}
                         style={{
-                          padding: '10px 16px',
-                          border: selectedVariant?.id === variant.id ? '2px solid #4CAF50' : '1px solid #ddd',
+                          padding: '8px 14px',
+                          border: selectedVariant?.id === variant.id ? '2px solid #4CAF50' : '2px solid #ddd',
                           borderRadius: '6px',
                           backgroundColor: selectedVariant?.id === variant.id ? '#f0fdf4' : 'white',
                           cursor: 'pointer',
                           fontSize: '14px',
                           fontWeight: selectedVariant?.id === variant.id ? '600' : '400',
-                          transition: 'all 0.2s',
+                          transition: 'background-color 0.2s, border-color 0.2s',
                           display: 'flex',
                           flexDirection: 'column',
-                          alignItems: 'flex-start',
-                          minWidth: '120px'
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '110px',
+                          minHeight: '44px'
                         }}
                         onMouseOver={(e) => {
                           if (selectedVariant?.id !== variant.id) {
@@ -317,18 +365,19 @@ export default function ProductDetail() {
                       </button>
                     ))}
                   </div>
-                  {selectedVariant && (
-                    <div style={{ 
-                      marginTop: '12px', 
-                      padding: '10px', 
-                      backgroundColor: '#f0f9ff', 
-                      borderRadius: '6px',
-                      fontSize: '13px',
-                      color: '#0369a1'
-                    }}>
-                      ✓ Selected: <strong>{selectedVariant.variantKey || selectedVariant.name}</strong>
-                    </div>
-                  )}
+                  <div style={{ 
+                    marginTop: '10px', 
+                    marginBottom: '8px',
+                    padding: '8px 10px', 
+                    backgroundColor: selectedVariant ? '#f0f9ff' : 'transparent',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    color: selectedVariant ? '#0369a1' : 'transparent',
+                    minHeight: '33px',
+                    visibility: selectedVariant ? 'visible' : 'hidden'
+                  }}>
+                    ✓ Selected: <strong>{selectedVariant?.variantKey || selectedVariant?.name || 'None'}</strong>
+                  </div>
                 </div>
               )}
               
@@ -357,9 +406,49 @@ export default function ProductDetail() {
           <div className="product_details_col">
             <h1 className="product_name">{product.name}</h1>
             <hr className="product_name_hr" />
-            <h2 className="product_price">
-              ${parseFloat(product.price || 0).toFixed(2)}
-            </h2>
+            
+            {/* Price Display with Live Discount */}
+            <div className="product_price_container" style={{ marginBottom: '1rem' }}>
+              {isLive ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                  <h2 className="product_price_original" style={{
+                    fontSize: '1.3rem',
+                    fontWeight: '600',
+                    color: '#999',
+                    textDecoration: 'line-through',
+                    margin: 0
+                  }}>
+                    ${parseFloat(product.price || 0).toFixed(2)}
+                  </h2>
+                  <h2 className="product_price" style={{
+                    fontSize: '2rem',
+                    fontWeight: '700',
+                    background: 'linear-gradient(135deg, #ff0844 0%, #ff4d6d 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    margin: 0
+                  }}>
+                    ${calculateLivePrice(product.price || 0).toFixed(2)}
+                  </h2>
+                  <span style={{
+                    background: 'linear-gradient(135deg, #ff0844 0%, #ff4d6d 100%)',
+                    color: 'white',
+                    padding: '0.4rem 1rem',
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    letterSpacing: '0.5px'
+                  }}>
+                    20% OFF - LIVE NOW!
+                  </span>
+                </div>
+              ) : (
+                <h2 className="product_price">
+                  ${parseFloat(product.price || 0).toFixed(2)}
+                </h2>
+              )}
+            </div>
             
             {/* Main Description */}
             {product.description && (
@@ -467,6 +556,7 @@ export default function ProductDetail() {
         </div>
       </div>
         </div>
+        </>
       )}
     </Layout>
   );

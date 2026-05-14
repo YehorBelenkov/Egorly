@@ -155,6 +155,12 @@
     border-radius: 12px;
     overflow: hidden;
     background: #f8f9fa;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.item_image_container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 89, 170, 0.15);
 }
 
 .item_image_container img {
@@ -165,6 +171,15 @@
 
 .item_details {
     flex: 1;
+    transition: transform 0.2s ease;
+}
+
+.item_details:hover {
+    transform: translateX(4px);
+}
+
+.item_details:hover .item_name {
+    color: #0059aa;
 }
 
 .item_name {

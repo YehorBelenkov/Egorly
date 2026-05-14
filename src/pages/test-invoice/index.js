@@ -422,7 +422,7 @@ function InvoicePreview({ data, totals }) {
 
         <center>
           <a 
-            href="https://egorly.com/profile/orders" 
+            href="https://egorly.com/profile" 
             style={{
               display: 'inline-block',
               padding: '12px 30px',
