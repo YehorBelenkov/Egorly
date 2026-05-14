@@ -1026,6 +1026,12 @@
 }
 
 @media (max-width: 600px) {
+    .welcome_content {
+        padding-top: 10rem;
+        height: auto;
+        min-height: 100vh;
+    }
+
     .stream_button {
         top: 115px;
         bottom: auto;
@@ -1059,12 +1065,12 @@
 
     .welcome_inner {
         padding: 2rem 1rem;
-        margin-top: 2rem;
+        margin-top: 0;
     }
 
     .welcome_logo {
         width: 120px;
-        margin-top: 1.5rem;
+        margin-top: 0;
     }
 
     .welcome_h1 {
