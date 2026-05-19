@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { app } from "../../lib/firebaseConfig";
 import { getGuestSession, getGuestCart, saveGuestCart } from "../../lib/guestUser";
-import { getIsLive, calculateLivePrice } from "../../lib/liveStatus";
 import "./product_detail.css";
 import Layout from "../../app/components/Layout";
 import LiveBanner from "../../app/components/LiveBanner";
@@ -11,6 +10,7 @@ import LiveBanner from "../../app/components/LiveBanner";
 export default function ProductDetail() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLive, setIsLive] = useState(false);
+  const [discountPercentage, setDiscountPercentage] = useState(20);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 900);
@@ -19,8 +19,27 @@ export default function ProductDetail() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Fetch discount status from admin toggle
   useEffect(() => {
-    setIsLive(getIsLive());
+    const fetchDiscountStatus = async () => {
+      try {
+        const res = await fetch('/api/discount-toggle');
+        if (res.ok) {
+          const data = await res.json();
+          setIsLive(data.enabled || false);
+          setDiscountPercentage(data.percentage || 20);
+        }
+      } catch (err) {
+        console.error('Failed to fetch discount status:', err);
+      }
+    };
+
+    fetchDiscountStatus();
+    
+    // Poll every 5 seconds to check if admin toggled it
+    const interval = setInterval(fetchDiscountStatus, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const router = useRouter();
@@ -571,7 +590,7 @@ export default function ProductDetail() {
                     backgroundClip: 'text',
                     margin: 0
                   }}>
-                    ${calculateLivePrice(product.price || 0).toFixed(2)}
+                    ${(parseFloat(product.price || 0) * (1 - discountPercentage / 100)).toFixed(2)}
                   </h2>
                   <span style={{
                     background: 'linear-gradient(135deg, #ff0844 0%, #ff4d6d 100%)',
@@ -582,7 +601,7 @@ export default function ProductDetail() {
                     fontWeight: '700',
                     letterSpacing: '0.5px'
                   }}>
-                    20% OFF - LIVE NOW!
+                    {discountPercentage}% OFF - LIVE NOW!
                   </span>
                 </div>
               ) : (

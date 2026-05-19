@@ -30,6 +30,11 @@ export default function ScraperTestPage() {
   const [topUsers, setTopUsers] = useState<User[]>([]);
   const [error, setError] = useState('');
   const [connectionAttempts, setConnectionAttempts] = useState(0);
+  
+  // Discount toggle state
+  const [discountEnabled, setDiscountEnabled] = useState(false);
+  const [discountPercentage, setDiscountPercentage] = useState(20);
+  const [updatingDiscount, setUpdatingDiscount] = useState(false);
 
   // Poll for updated user data every 2 seconds
   useEffect(() => {
@@ -47,7 +52,44 @@ export default function ScraperTestPage() {
   // Check connection status on mount
   useEffect(() => {
     checkConnectionStatus();
+    fetchDiscountStatus();
   }, []);
+  
+  const fetchDiscountStatus = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/discount-toggle');
+      if (res.ok) {
+        const data = await res.json();
+        setDiscountEnabled(data.enabled || false);
+        setDiscountPercentage(data.percentage || 20);
+      }
+    } catch (err) {
+      console.error('Failed to fetch discount status:', err);
+    }
+  };
+  
+  const toggleDiscount = async () => {
+    setUpdatingDiscount(true);
+    try {
+      const newState = !discountEnabled;
+      const res = await fetch('http://localhost:3000/api/discount-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          enabled: newState, 
+          percentage: discountPercentage 
+        }),
+      });
+      
+      if (res.ok) {
+        setDiscountEnabled(newState);
+      }
+    } catch (err) {
+      console.error('Failed to toggle discount:', err);
+    } finally {
+      setUpdatingDiscount(false);
+    }
+  };
 
   const checkConnectionStatus = async () => {
     try {
@@ -180,6 +222,45 @@ export default function ScraperTestPage() {
                   Disconnect
                 </button>
               )}
+            </div>
+          </div>
+          
+          {/* Discount Toggle Card */}
+          <div className="md:col-span-2 p-6 bg-gradient-to-br from-green-800/70 to-emerald-800/50 backdrop-blur-sm rounded-xl border border-green-700 shadow-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <span className="text-3xl">💰</span>
+                <div>
+                  <div className="text-sm text-gray-300 uppercase tracking-wide font-semibold">
+                    {discountPercentage}% Discount Banner
+                  </div>
+                  <div className={`text-2xl font-bold ${discountEnabled ? 'text-green-400' : 'text-gray-400'}`}>
+                    {discountEnabled ? 'ACTIVE' : 'INACTIVE'}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={toggleDiscount}
+                disabled={updatingDiscount}
+                className={`relative inline-flex h-12 w-24 items-center rounded-full transition-all ${
+                  discountEnabled ? 'bg-green-500' : 'bg-gray-600'
+                } ${updatingDiscount ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-lg'}`}
+              >
+                <span
+                  className={`inline-block h-10 w-10 transform rounded-full bg-white shadow-lg transition-transform ${
+                    discountEnabled ? 'translate-x-12' : 'translate-x-1'
+                  }`}
+                >
+                  <span className="flex items-center justify-center h-full text-xl">
+                    {discountEnabled ? '✓' : '✗'}
+                  </span>
+                </span>
+              </button>
+            </div>
+            <div className="mt-3 text-xs text-gray-300">
+              {discountEnabled 
+                ? '🎉 Discount banner is showing across the website' 
+                : '⚠️ No discount banner on website'}
             </div>
           </div>
           

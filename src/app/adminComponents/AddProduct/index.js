@@ -24,6 +24,17 @@ const AddProduct = ({ onClose, idToken }) => {
   const [fetchingCJ, setFetchingCJ] = useState(false);
   const [selectedVariants, setSelectedVariants] = useState({}); // { variantId: { selected: true, customImages: [] } }
   
+  // Manual variants (for non-CJ products like Alibaba)
+  const [manualVariants, setManualVariants] = useState([]);
+  const [newManualVariant, setNewManualVariant] = useState({
+    name: '',
+    sku: '',
+    price: '',
+    stock: '',
+    variantKey: '',
+    images: []
+  });
+  
   // For adding new attributes
   const [newAttributeKey, setNewAttributeKey] = useState('');
   const [newAttributeValue, setNewAttributeValue] = useState('');
@@ -181,23 +192,94 @@ const AddProduct = ({ onClose, idToken }) => {
     }));
   };
 
+  // Manual Variant Handlers
+  const handleManualVariantInputChange = (field, value) => {
+    setNewManualVariant(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleManualVariantImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setNewManualVariant(prev => ({
+      ...prev,
+      images: [...prev.images, ...files]
+    }));
+  };
+
+  const handleRemoveManualVariantImage = (imageIndex) => {
+    setNewManualVariant(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== imageIndex)
+    }));
+  };
+
+  const handleAddManualVariant = () => {
+    if (!newManualVariant.name.trim()) {
+      alert('Please enter a variant name');
+      return;
+    }
+    
+    const variant = {
+      id: `manual_${Date.now()}`, // Generate unique ID
+      name: newManualVariant.name,
+      sku: newManualVariant.sku || `SKU-${Date.now()}`,
+      price: parseFloat(newManualVariant.price) || 0,
+      stock: parseInt(newManualVariant.stock) || 0,
+      variantKey: newManualVariant.variantKey || newManualVariant.name,
+      images: newManualVariant.images,
+      isManual: true
+    };
+
+    setManualVariants(prev => [...prev, variant]);
+    
+    // Reset form
+    setNewManualVariant({
+      name: '',
+      sku: '',
+      price: '',
+      stock: '',
+      variantKey: '',
+      images: []
+    });
+  };
+
+  const handleRemoveManualVariant = (index) => {
+    setManualVariants(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditManualVariant = (index) => {
+    const variant = manualVariants[index];
+    setNewManualVariant({
+      name: variant.name,
+      sku: variant.sku,
+      price: variant.price.toString(),
+      stock: variant.stock.toString(),
+      variantKey: variant.variantKey,
+      images: variant.images
+    });
+    handleRemoveManualVariant(index);
+  };
+
   const handleAddProduct = async () => {
     try {
       setLoading(true);
       setError('');
 
-      // Get selected variants
-      const variantsToAdd = Object.entries(selectedVariants)
+      const storage = getStorage();
+
+      // Process CJ variants (selected ones)
+      const cjVariantsToAdd = Object.entries(selectedVariants)
         .filter(([_, data]) => data.selected)
         .map(([variantId, data]) => {
           const variant = cjProduct?.variants?.find(v => v.id === variantId);
           return { ...variant, customImages: data.customImages };
         });
 
-      // If variants are selected, upload custom images for each variant
-      const storage = getStorage();
-      const processedVariants = await Promise.all(
-        variantsToAdd.map(async (variant) => {
+      // Process CJ variants: upload custom images for each variant
+      const processedCJVariants = await Promise.all(
+        cjVariantsToAdd.map(async (variant) => {
           if (variant.customImages && variant.customImages.length > 0) {
             const uploadPromises = variant.customImages.map(async (image, index) => {
               const storageRef = ref(storage, `products/${productData.cjProductId}_${variant.id}_${Date.now()}_${index}_${image.name}`);
@@ -210,6 +292,30 @@ const AddProduct = ({ onClose, idToken }) => {
           return { ...variant, customImages: undefined };
         })
       );
+
+      // Process manual variants: upload images
+      const processedManualVariants = await Promise.all(
+        manualVariants.map(async (variant) => {
+          if (variant.images && variant.images.length > 0) {
+            const uploadPromises = variant.images.map(async (image, index) => {
+              const storageRef = ref(storage, `products/manual_${variant.id}_${Date.now()}_${index}_${image.name}`);
+              await uploadBytes(storageRef, image);
+              return getDownloadURL(storageRef);
+            });
+            const uploadedUrls = await Promise.all(uploadPromises);
+            return { 
+              ...variant, 
+              customImageUrls: uploadedUrls, 
+              images: undefined,
+              image: uploadedUrls[0] || null // Set first image as main variant image
+            };
+          }
+          return { ...variant, images: undefined };
+        })
+      );
+
+      // Combine all variants
+      const allVariants = [...processedCJVariants, ...processedManualVariants];
 
       // Upload main product images to Firebase Storage IN PARALLEL
       const uploadPromises = productData.images.map(async (image, index) => {
@@ -234,7 +340,7 @@ const AddProduct = ({ onClose, idToken }) => {
         price: parseFloat(productData.price),
         quantity: parseInt(productData.quantity, 10),
         cjProductId: productData.cjProductId || null, // CJ Dropshipping Product ID
-        variants: processedVariants, // Selected variants with custom images and SKU data
+        variants: allVariants, // All variants (CJ + Manual)
         description: productData.description,
         descriptionSections: productData.descriptionSections, // Multiple sections
         attributes: productData.attributes, // Dynamic attributes
@@ -507,6 +613,307 @@ const AddProduct = ({ onClose, idToken }) => {
             </div>
           </div>
         )}
+
+        {/* Manual Variants Section (for non-CJ products like Alibaba) */}
+        <div className="form-section">
+          <h3 className="section-title">
+            <span className="section-icon">🎨</span>
+            Manual Variants (Alibaba, etc.)
+          </h3>
+          <p style={{ fontSize: '14px', color: '#666', marginBottom: '15px' }}>
+            Add variants manually for products from Alibaba or other suppliers
+          </p>
+
+          {/* Add New Manual Variant Form */}
+          <div style={{
+            border: '2px dashed #e0e0e0',
+            borderRadius: '8px',
+            padding: '20px',
+            backgroundColor: '#fafafa',
+            marginBottom: '20px'
+          }}>
+            <h4 style={{ margin: '0 0 15px 0', fontSize: '15px', fontWeight: '600' }}>Add New Variant</h4>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                  Variant Name *
+                </label>
+                <input
+                  type="text"
+                  value={newManualVariant.name}
+                  onChange={(e) => handleManualVariantInputChange('name', e.target.value)}
+                  placeholder="e.g., Red - Small, Blue - Large"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                  SKU
+                </label>
+                <input
+                  type="text"
+                  value={newManualVariant.sku}
+                  onChange={(e) => handleManualVariantInputChange('sku', e.target.value)}
+                  placeholder="e.g., SKU-RED-SM (auto-generated if empty)"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                  Price ($)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newManualVariant.price}
+                  onChange={(e) => handleManualVariantInputChange('price', e.target.value)}
+                  placeholder="0.00"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                  Stock
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={newManualVariant.stock}
+                  onChange={(e) => handleManualVariantInputChange('stock', e.target.value)}
+                  placeholder="0"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                  Variant Key
+                </label>
+                <input
+                  type="text"
+                  value={newManualVariant.variantKey}
+                  onChange={(e) => handleManualVariantInputChange('variantKey', e.target.value)}
+                  placeholder="e.g., color:red;size:small (uses name if empty)"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Variant Images */}
+            <div style={{ marginTop: '15px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '8px' }}>
+                📸 Variant Images
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleManualVariantImageChange}
+                style={{
+                  display: 'block',
+                  marginBottom: '10px',
+                  fontSize: '13px',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  width: '100%'
+                }}
+              />
+
+              {newManualVariant.images.length > 0 && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+                  gap: '10px',
+                  marginTop: '10px'
+                }}>
+                  {newManualVariant.images.map((image, imgIndex) => (
+                    <div key={imgIndex} style={{ position: 'relative' }}>
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={`Preview ${imgIndex + 1}`}
+                        style={{
+                          width: '100%',
+                          height: '80px',
+                          objectFit: 'cover',
+                          borderRadius: '4px',
+                          border: '2px solid #ddd'
+                        }}
+                      />
+                      <button
+                        onClick={() => handleRemoveManualVariantImage(imgIndex)}
+                        style={{
+                          position: 'absolute',
+                          top: '2px',
+                          right: '2px',
+                          background: 'rgba(255, 0, 0, 0.9)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '50%',
+                          width: '20px',
+                          height: '20px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          padding: 0
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddManualVariant}
+              style={{
+                marginTop: '15px',
+                padding: '10px 20px',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                width: '100%'
+              }}
+            >
+              ➕ Add This Variant
+            </button>
+          </div>
+
+          {/* Display Added Manual Variants */}
+          {manualVariants.length > 0 && (
+            <div>
+              <h4 style={{ margin: '0 0 15px 0', fontSize: '15px', fontWeight: '600' }}>
+                Added Manual Variants ({manualVariants.length})
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {manualVariants.map((variant, index) => (
+                  <div
+                    key={variant.id}
+                    style={{
+                      border: '2px solid #4CAF50',
+                      borderRadius: '8px',
+                      padding: '15px',
+                      backgroundColor: '#f0fdf4'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      {variant.images && variant.images.length > 0 && (
+                        <img
+                          src={URL.createObjectURL(variant.images[0])}
+                          alt={variant.name}
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            objectFit: 'cover',
+                            borderRadius: '6px',
+                            border: '1px solid #ddd'
+                          }}
+                        />
+                      )}
+
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600', fontSize: '15px', marginBottom: '4px' }}>
+                          {variant.name}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>
+                          SKU: {variant.sku}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>
+                          Price: ${variant.price}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>
+                          Stock: {variant.stock}
+                        </div>
+                        {variant.variantKey && (
+                          <div style={{ fontSize: '13px', color: '#3b82f6', marginBottom: '2px' }}>
+                            Key: {variant.variantKey}
+                          </div>
+                        )}
+                        {variant.images && variant.images.length > 1 && (
+                          <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>
+                            📷 {variant.images.length} images
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => handleEditManualVariant(index)}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#2196F3',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '13px'
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleRemoveManualVariant(index)}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#f44336',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '13px'
+                          }}
+                        >
+                          🗑️ Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Description Section */}
         <div className="form-section">

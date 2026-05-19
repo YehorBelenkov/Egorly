@@ -5,6 +5,7 @@ import Layout from "../../app/components/Layout";
 import AddProduct from '../../app/adminComponents/AddProduct';
 import ShowProducts from '../../app/adminComponents/ShowProducts';
 import OrdersManagement from '../../app/adminComponents/OrdersManagement';
+import TikTokScraper from '../../app/adminComponents/TikTokScraper';
 import "./index.css";
 
 const AdminPanel = () => {
@@ -70,19 +71,7 @@ const AdminPanel = () => {
       case 'orders':
         return <OrdersManagement idToken={idToken} />;
       case 'scraper':
-        return (
-          <div className="iframe-page">
-            <div className="iframe-header">
-              <h2>📊 TikTok Live Scraper</h2>
-              <p>Monitor your TikTok live stream engagement in real-time</p>
-            </div>
-            <iframe 
-              src="http://localhost:3001/scraper" 
-              className="admin-content-iframe"
-              title="TikTok Scraper"
-            />
-          </div>
-        );
+        return <TikTokScraper />;
       case 'fortuneWheel':
         return (
           <div className="iframe-page">

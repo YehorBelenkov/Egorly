@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import DiscountBanner from "./DiscountBanner";
 import "./layout.css";
 
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
@@ -36,6 +37,7 @@ const Layout = ({ children }) => {
 
   return (
     <div className="main_body">
+      <DiscountBanner />
       <Navbar user={user} onLogout={handleLogout} />
       <div className="content_wrapper">
         {/* ✅ pass user and onLogout down to all pages */}

@@ -6,7 +6,6 @@ import { useEffect, useState, useRef } from 'react'
 import { app } from '../../lib/firebaseConfig'
 import { getFirestore, doc, getDoc, collection, getDocs } from 'firebase/firestore'
 import { getGuestSession, getGuestCart } from '../../lib/guestUser'
-import { getIsLive, calculateLivePrice } from '../../lib/liveStatus'
 
 const GOOGLE_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
@@ -17,6 +16,7 @@ function CheckoutInner({ user }) {
     const [toast, setToast] = useState(null)
     const [guestId, setGuestId] = useState(null)
     const [isLive, setIsLive] = useState(false)
+    const [discountPercentage, setDiscountPercentage] = useState(20)
 
     // saved addresses
     const [savedAddresses, setSavedAddresses] = useState([])
@@ -41,9 +41,27 @@ function CheckoutInner({ user }) {
     const addressRef = useRef(null)
     const autocompleteRef = useRef(null)
 
-    // Check if live
+    // Fetch discount status
     useEffect(() => {
-        setIsLive(getIsLive());
+        const fetchDiscountStatus = async () => {
+            try {
+                const res = await fetch('/api/discount-toggle');
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsLive(data.enabled || false);
+                    setDiscountPercentage(data.percentage || 20);
+                }
+            } catch (err) {
+                console.error('Failed to fetch discount status:', err);
+            }
+        };
+
+        fetchDiscountStatus();
+        
+        // Poll every 5 seconds to check if admin toggled it
+        const interval = setInterval(fetchDiscountStatus, 5000);
+        
+        return () => clearInterval(interval);
     }, []);
 
     // auto-dismiss toast
@@ -58,10 +76,10 @@ function CheckoutInner({ user }) {
         let s = cart.items.reduce((acc, it) => acc + (parseFloat(it.price||0) * (it.quantity||0)), 0)
         // Apply live discount if streaming
         if (isLive) {
-            s = calculateLivePrice(s);
+            s = s * (1 - discountPercentage / 100);
         }
         setSubtotal(s)
-    },[cart.items, isLive])
+    },[cart.items, isLive, discountPercentage])
 
     useEffect(()=>{
         const fetchCart = async ()=>{

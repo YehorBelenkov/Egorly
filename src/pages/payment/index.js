@@ -7,7 +7,6 @@ import LiveBanner from "../../app/components/LiveBanner"
 import { app } from '../../lib/firebaseConfig'
 import { getFirestore, doc, getDoc, collection, addDoc, setDoc } from 'firebase/firestore'
 import { getGuestSession, getGuestCart, clearGuestCart } from '../../lib/guestUser'
-import { getIsLive, calculateLivePrice } from '../../lib/liveStatus'
 import { 
   CreditCard, 
   PaymentForm, 
@@ -26,6 +25,7 @@ const PaymentInner = ({ user }) => {
     const [showContent, setShowContent] = useState(false)
     const [guestId, setGuestId] = useState(null)
     const [isLive, setIsLive] = useState(false)
+    const [discountPercentage, setDiscountPercentage] = useState(20)
     
     // Square configuration with working credentials
     const appId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID || 'sq0idp-VeeaYnmIvbl7sdhdB7NJIw'
@@ -99,9 +99,27 @@ const PaymentInner = ({ user }) => {
         }
     }, [user])
 
-    // Check if live
+    // Fetch discount status
     useEffect(() => {
-        setIsLive(getIsLive());
+        const fetchDiscountStatus = async () => {
+            try {
+                const res = await fetch('/api/discount-toggle');
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsLive(data.enabled || false);
+                    setDiscountPercentage(data.percentage || 20);
+                }
+            } catch (err) {
+                console.error('Failed to fetch discount status:', err);
+            }
+        };
+
+        fetchDiscountStatus();
+        
+        // Poll every 5 seconds to check if admin toggled it
+        const interval = setInterval(fetchDiscountStatus, 5000);
+        
+        return () => clearInterval(interval);
     }, []);
 
     // Check if Square credentials are properly configured
@@ -165,7 +183,7 @@ const PaymentInner = ({ user }) => {
         // Apply live discount if streaming
         const originalSubtotal = itemsTotal;
         if (isLive) {
-            itemsTotal = calculateLivePrice(itemsTotal);
+            itemsTotal = itemsTotal * (1 - discountPercentage / 100);
             console.log('Live discount applied. New total:', itemsTotal);
         }
         
@@ -741,7 +759,7 @@ const PaymentInner = ({ user }) => {
                                             marginLeft: '0.5rem',
                                             letterSpacing: '0.3px'
                                         }}>
-                                            20% OFF - LIVE!
+                                            {discountPercentage}% OFF - LIVE!
                                         </span>
                                     )}
                                 </span>

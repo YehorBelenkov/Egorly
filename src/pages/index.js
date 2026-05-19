@@ -13,7 +13,31 @@ import {
 export default function Home() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
-  const [isLive, setIsLive] = useState(true); // TODO: Connect to actual TikTok live status
+  const [isLive, setIsLive] = useState(false);
+  const [discountPercentage, setDiscountPercentage] = useState(20);
+
+  // Fetch discount status from admin toggle
+  useEffect(() => {
+    const fetchDiscountStatus = async () => {
+      try {
+        const res = await fetch('/api/discount-toggle');
+        if (res.ok) {
+          const data = await res.json();
+          setIsLive(data.enabled || false);
+          setDiscountPercentage(data.percentage || 20);
+        }
+      } catch (err) {
+        console.error('Failed to fetch discount status:', err);
+      }
+    };
+
+    fetchDiscountStatus();
+    
+    // Poll every 5 seconds to check if admin toggled it
+    const interval = setInterval(fetchDiscountStatus, 5000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const db = getFirestore(app);
@@ -43,7 +67,7 @@ export default function Home() {
             <title>{"Egorly - Where Gaming Meets Giveaways"}</title>
             <meta
               name="description"
-              content="Join our live gaming streams on TikTok! Get 20% off sitewide when we're live, spin the fortune wheel for prizes, and shop exclusive products!"
+              content={isLive ? `Join our live gaming streams on TikTok! Get ${discountPercentage}% off sitewide when we're live, spin the fortune wheel for prizes, and shop exclusive products!` : `Join our live gaming streams on TikTok! Spin the fortune wheel for prizes, and shop exclusive products!`}
             />
           </Head>
 
@@ -69,7 +93,7 @@ export default function Home() {
             {isLive && (
               <div className="live_banner">
                 <div className="live_pulse"></div>
-                <span className="live_text">🔴 LIVE NOW - 20% OFF EVERYTHING!</span>
+                <span className="live_text">🔴 LIVE NOW - {discountPercentage}% OFF EVERYTHING!</span>
               </div>
             )}
             
@@ -99,7 +123,7 @@ export default function Home() {
                 <div className="welcome_txt">
                   <h1 className="welcome_h1">Where Gaming Meets Giveaways</h1>
                   <p className="welcome_p">
-                    Watch me game live on TikTok, get <strong style={{color: '#ffd700'}}>20% OFF everything</strong> when I'm streaming, and spin the fortune wheel for a chance to <strong style={{color: '#ffd700'}}>win real prizes!</strong>
+                    Watch me game live on TikTok{isLive ? `, get ` : ''}{isLive && <strong style={{color: '#ffd700'}}>{discountPercentage}% OFF everything</strong>}{isLive ? ` while I'm streaming, ` : ', '}and spin the fortune wheel for a chance to <strong style={{color: '#ffd700'}}>win real prizes!</strong>
                   </p>
                   <p className="welcome_description">
                     Every stream is a party. I'm gaming, you're watching, and everyone gets a shot at the fortune wheel. 
@@ -138,13 +162,15 @@ export default function Home() {
                       <div className="feature_desc">Real rewards</div>
                     </div>
                   </div>
-                  <div className="feature_card">
-                    <div className="feature_glow"></div>
-                    <div className="feature_content">
-                      <div className="feature_title">20% OFF Live</div>
-                      <div className="feature_desc">When streaming</div>
+                  {isLive && (
+                    <div className="feature_card">
+                      <div className="feature_glow"></div>
+                      <div className="feature_content">
+                        <div className="feature_title">{discountPercentage}% OFF Live</div>
+                        <div className="feature_desc">Active Now</div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -153,7 +179,7 @@ export default function Home() {
           <div className="products_container" id="products">
             <div className="section_header">
               <h1 className="prod_h1">Shop The Collection</h1>
-              <p className="section_subtitle">Quality products, unbeatable prices—especially when we're live</p>
+              <p className="section_subtitle">{isLive ? `Quality products, unbeatable prices—${discountPercentage}% OFF while we're live!` : 'Quality products at great prices'}</p>
             </div>
 
             <div className="product_display">
@@ -181,9 +207,9 @@ export default function Home() {
                               ${parseFloat(product.price).toFixed(2)}
                             </h1>
                             <h1 className="discounted_price">
-                              ${(parseFloat(product.price) * 0.8).toFixed(2)}
+                              ${(parseFloat(product.price) * (1 - discountPercentage / 100)).toFixed(2)}
                             </h1>
-                            <span className="discount_badge">20% OFF</span>
+                            <span className="discount_badge">{discountPercentage}% OFF</span>
                           </>
                         ) : (
                           <h1 className="current_price">

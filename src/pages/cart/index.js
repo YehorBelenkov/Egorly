@@ -7,7 +7,6 @@ import './cart.css'
 import { app } from '../../lib/firebaseConfig'
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
 import { getGuestSession, getGuestCart, saveGuestCart } from '../../lib/guestUser'
-import { getIsLive, calculateLivePrice } from '../../lib/liveStatus'
 
 function getItemKey(item){
   return item.id ?? item.productId ?? item.productIdString ?? null
@@ -19,6 +18,7 @@ function CartInner({ user }){
   const [toast, setToast] = useState(null)
   const [guestId, setGuestId] = useState(null)
   const [isLive, setIsLive] = useState(false)
+  const [discountPercentage, setDiscountPercentage] = useState(20)
 
   useEffect(()=>{
     const fetchCart = async ()=>{
@@ -56,7 +56,25 @@ function CartInner({ user }){
   }, [toast])
 
   useEffect(() => {
-    setIsLive(getIsLive());
+    const fetchDiscountStatus = async () => {
+      try {
+        const res = await fetch('/api/discount-toggle');
+        if (res.ok) {
+          const data = await res.json();
+          setIsLive(data.enabled || false);
+          setDiscountPercentage(data.percentage || 20);
+        }
+      } catch (err) {
+        console.error('Failed to fetch discount status:', err);
+      }
+    };
+
+    fetchDiscountStatus();
+    
+    // Poll every 5 seconds to check if admin toggled it
+    const interval = setInterval(fetchDiscountStatus, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const saveCart = async (items)=>{
@@ -108,7 +126,7 @@ function CartInner({ user }){
   let subtotal = cart.items.reduce((s, it) => s + (parseFloat(it.price || 0) * (it.quantity || 0)), 0)
   const originalSubtotal = subtotal;
   if (isLive) {
-    subtotal = calculateLivePrice(subtotal);
+    subtotal = subtotal * (1 - discountPercentage / 100);
   }
 
   return (
@@ -233,7 +251,7 @@ function CartInner({ user }){
                           marginLeft: '0.5rem',
                           letterSpacing: '0.3px'
                         }}>
-                          20% OFF
+                          {discountPercentage}% OFF
                         </span>
                       )}
                     </span>
