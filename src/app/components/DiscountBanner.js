@@ -29,11 +29,7 @@ export default function DiscountBanner() {
     };
 
     fetchStatus();
-    
-    // Poll every 10 seconds to check if admin toggled it
-    const interval = setInterval(fetchStatus, 10000);
-    
-    return () => clearInterval(interval);
+    // No polling needed - just check once on load
   }, []);
 
   const handleDismiss = () => {

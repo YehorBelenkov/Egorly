@@ -1,14 +1,4 @@
-import admin from 'firebase-admin';
-
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
-const db = admin.firestore();
+import admin from '../../lib/firebaseAdmin';
 
 export default async function handler(req, res) {
   try {
@@ -25,10 +15,12 @@ export default async function handler(req, res) {
     try {
       decodedToken = await admin.auth().verifyIdToken(token);
     } catch (err) {
+      console.error('Token verification error:', err);
       return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
 
     // Check the user's admin status in Firestore
+    const db = admin.firestore();
     const userDoc = await db.collection('users').doc(decodedToken.uid).get();
     if (!userDoc.exists) {
       return res.status(404).json({ error: 'User not found' });
@@ -45,34 +37,21 @@ export default async function handler(req, res) {
     if (userData.isAdmin !== true) {
       return res.status(403).json({ error: 'Access denied. Not an admin.' });
     }
-    
-    // Proceed with admin access
-    res.status(200).json({ message: 'Admin verified' });
 
-    // If the user is an admin, trigger the set-admin API
-    const response = await fetch('http://localhost:3000/api/set-admin', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ uid: decodedToken.uid }),  // The UID you want to set as admin
-    });
-    
-    const responseBody = await response.json(); // Read the body once
-    
-    console.log("Response Status:", response.status);
-    console.log("Response Body:", responseBody); // Now you can log the body
-    
-    if (response.ok) {
-      res.status(200).json({ message: 'Admin verified and set' });
-    } else {
-      console.log("BIG ERROR HERE");
-      res.status(response.status).json(responseBody); // Use the response body here
+    // If the user is an admin, set admin claim
+    try {
+      await admin.auth().setCustomUserClaims(decodedToken.uid, { admin: true });
+      console.log('Admin claim set successfully for:', decodedToken.uid);
+    } catch (claimError) {
+      console.error('Error setting admin claim:', claimError);
+      // Continue even if claim setting fails
     }
+    
+    // Return success response
+    return res.status(200).json({ message: 'Admin verified' });
 
   } catch (err) {
     console.error('Error verifying admin:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }

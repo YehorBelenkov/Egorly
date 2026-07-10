@@ -8,6 +8,9 @@ import {
   getFirestore,
   collection,
   getDocs,
+  query,
+  limit,
+  orderBy
 } from "firebase/firestore";
 
 export default function Home() {
@@ -18,10 +21,12 @@ export default function Home() {
 
   // Fetch discount status from admin toggle
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchDiscountStatus = async () => {
       try {
         const res = await fetch('/api/discount-toggle');
-        if (res.ok) {
+        if (res.ok && isMounted) {
           const data = await res.json();
           setIsLive(data.enabled || false);
           setDiscountPercentage(data.percentage || 20);
@@ -33,29 +38,42 @@ export default function Home() {
 
     fetchDiscountStatus();
     
-    // Poll every 5 seconds to check if admin toggled it
-    const interval = setInterval(fetchDiscountStatus, 5000);
-    
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     const db = getFirestore(app);
 
     const fetchProducts = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "products"));
+        // Add limit to prevent loading all products at once
+        const productsQuery = query(
+          collection(db, "products"),
+          orderBy("name"),
+          limit(50) // Only load first 50 products
+        );
+        const querySnapshot = await getDocs(productsQuery);
         const productList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setProducts(productList);
+        
+        if (isMounted) {
+          setProducts(productList);
+        }
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
 
     fetchProducts();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (

@@ -1,4 +1,4 @@
-// Shared Firebase Admin SDK initialization
+// Shared Firebase Admin SDK initialization for EcoBy scraper
 import admin from 'firebase-admin';
 
 // Initialize Firebase Admin SDK only once
@@ -14,11 +14,14 @@ if (!admin.apps.length) {
       credential: admin.credential.cert(serviceAccount),
     });
     
-    console.log('✅ Firebase Admin SDK initialized successfully');
+    console.log('✅ Firebase Admin SDK initialized successfully (EcoBy)');
   } catch (error) {
     console.error('❌ Failed to initialize Firebase Admin SDK:', error.message);
     throw error;
   }
 }
 
+const db = admin.firestore();
+
+export { admin, db };
 export default admin;

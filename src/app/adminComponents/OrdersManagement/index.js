@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getFirestore, collection, query, orderBy, getDocs, doc, updateDoc } from 'firebase/firestore'
+import { getFirestore, collection, query, orderBy, getDocs, doc, updateDoc, limit } from 'firebase/firestore'
 import { app } from '../../../lib/firebaseConfig'
 import './index.css'
 
@@ -8,16 +8,30 @@ const OrdersManagement = ({ idToken }) => {
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('all')
     const [expandedOrder, setExpandedOrder] = useState(null)
+    const [loadLimit, setLoadLimit] = useState(50) // Limit orders to prevent memory issues
 
     useEffect(() => {
-        fetchOrders()
-    }, [])
+        let isMounted = true
+        
+        const loadOrders = async () => {
+            if (isMounted) {
+                await fetchOrders()
+            }
+        }
+        
+        loadOrders()
+        
+        return () => {
+            isMounted = false
+        }
+    }, [loadLimit])
 
     const fetchOrders = async () => {
         try {
             const db = getFirestore(app)
             const ordersRef = collection(db, 'orders')
-            const ordersQuery = query(ordersRef, orderBy('orderDate', 'desc'))
+            // Add limit to prevent loading thousands of orders
+            const ordersQuery = query(ordersRef, orderBy('orderDate', 'desc'), limit(loadLimit))
             const snapshot = await getDocs(ordersQuery)
             
             const ordersList = snapshot.docs.map(doc => ({
@@ -285,6 +299,27 @@ const OrdersManagement = ({ idToken }) => {
                     </div>
                 ))}
             </div>
+            
+            {/* Load More Button */}
+            {orders.length >= loadLimit && (
+                <div style={{ textAlign: 'center', marginTop: '2rem', padding: '1rem' }}>
+                    <button 
+                        onClick={() => setLoadLimit(prev => prev + 50)}
+                        style={{
+                            padding: '0.75rem 2rem',
+                            background: '#4CAF50',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            fontSize: '1rem'
+                        }}
+                    >
+                        Load More Orders (showing {orders.length})
+                    </button>
+                </div>
+            )}
         </div>
     )
 }

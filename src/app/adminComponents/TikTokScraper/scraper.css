@@ -210,6 +210,47 @@
   box-shadow: 0 6px 16px rgba(220, 38, 38, 0.7);
 }
 
+/* Clear All Button */
+.scraper-clear-btn {
+  padding: 0.5rem 1rem;
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  white-space: nowrap;
+}
+
+.scraper-clear-btn:hover:not(:disabled) {
+  background-color: #d97706;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.6);
+  transform: translateY(-1px);
+}
+
+.scraper-clear-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.scraper-clear-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Clear Non-Gift Users Button */
+.scraper-clear-non-gift-btn {
+  background-color: #8b5cf6;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.scraper-clear-non-gift-btn:hover:not(:disabled) {
+  background-color: #7c3aed;
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.6);
+}
+
 /* Toggle Switch */
 .scraper-toggle {
   position: relative;

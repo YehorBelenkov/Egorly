@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getScraperInstance } from '@/lib/scraper/instance';
+import { dbHelpers } from '@/lib/firestoreDb';
 
 // CORS headers for cross-origin requests
 const corsHeaders = {
@@ -14,17 +14,17 @@ export async function OPTIONS() {
 
 export async function POST() {
   try {
-    const scraperInstance = getScraperInstance();
-    scraperInstance.disconnect();
+    const removedCount = await dbHelpers.clearNonGiftUsers();
 
     return NextResponse.json({
       success: true,
-      message: 'Disconnected from live stream'
+      message: `Removed ${removedCount} non-gift users (comment/like only)`,
+      removedCount
     }, { headers: corsHeaders });
   } catch (error: any) {
-    console.error('Disconnect API error:', error);
+    console.error('Clear non-gift users API error:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to disconnect'
+      error: error.message || 'Failed to clear non-gift users'
     }, { status: 500, headers: corsHeaders });
   }
 }

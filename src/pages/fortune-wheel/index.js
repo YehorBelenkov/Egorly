@@ -91,7 +91,7 @@ const FortuneWheelAdmin = () => {
 
         <div className="iframe-container">
           <iframe 
-            src="http://localhost:3001/wheel" 
+            src="/wheel" 
             title="Fortune Wheel"
             className="admin-iframe"
           />
@@ -101,16 +101,15 @@ const FortuneWheelAdmin = () => {
           <h3>📋 How to Use</h3>
           <ol>
             <li>Make sure the TikTok scraper is running and connected</li>
-            <li>Add prizes using the interface above</li>
-            <li>Click "Select Random User" to pick a participant from your live stream</li>
-            <li>Click "Spin Wheel" to determine which prize they win</li>
-            <li>Winners are automatically saved to the database</li>
+            <li>Click "Open Wheel (Freeze Users)" to lock the current top 100 gift senders</li>
+            <li>Click "Spin Wheel" to randomly select a winner</li>
+            <li>Click "Close Wheel & Refresh" to unlock and get latest users</li>
           </ol>
         </div>
 
         <div className="admin-note">
-          <strong>Note:</strong> The Fortune Wheel is served from the EcoBy application running on port 3001.
-          Make sure it's running with <code>npm run dev</code> in the EcoBy folder.
+          <strong>Note:</strong> The Fortune Wheel automatically fetches the top 100 users who sent gifts.
+          Users are frozen when you open the wheel to prevent changes during the selection process.
         </div>
       </div>
     </Layout>

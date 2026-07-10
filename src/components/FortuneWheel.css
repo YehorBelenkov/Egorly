@@ -1,0 +1,565 @@
+/* Fortune Wheel Component Styles - Professional Casino Design */
+
+.fortune-wheel-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  gap: 6rem;
+  padding-top: 4rem;
+}
+
+/* ============================================
+   CURRENT SEGMENT DISPLAY - Above Wheel
+   ============================================ */
+.wheel-current-segment-display {
+  background: rgba(15, 12, 41, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  padding: 1.5rem 3rem;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(255, 255, 255, 0.2),
+    0 0 60px rgba(0, 242, 254, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  text-align: center;
+  border: 2px solid;
+  border-image: linear-gradient(135deg, #00f2fe, #7928ca, #ff0080) 1;
+  animation: slideDownFade 0.3s ease-out;
+  min-width: 300px;
+  max-width: 90%;
+  margin-bottom: 3rem;
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.current-segment-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+}
+
+.current-segment-name {
+  font-size: 2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #00f2fe 0%, #7928ca 50%, #ff0080 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 12px rgba(0, 242, 254, 0.5));
+  animation: textPulse 1.5s ease-in-out infinite;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+@keyframes textPulse {
+  0%, 100% {
+    filter: drop-shadow(0 4px 12px rgba(0, 242, 254, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 6px 16px rgba(121, 40, 202, 0.8));
+  }
+}
+
+.fortune-wheel-wrapper {
+  position: relative;
+}
+
+/* ============================================
+   LED LIGHTS RING - Vegas Casino Style
+   ============================================ */
+.led-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.led-light {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #00f2fe 0%, #00d4e6 50%, #00a8c0 100%);
+  box-shadow: 
+    0 0 10px #00f2fe,
+    0 0 20px #00f2fe,
+    0 0 30px #00f2fe,
+    0 0 40px rgba(0, 242, 254, 0.5);
+  animation: ledPulse 1.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.led-light:nth-child(3n) {
+  background: radial-gradient(circle, #7928ca 0%, #6420b0 50%, #4f1a8e 100%);
+  box-shadow: 
+    0 0 10px #7928ca,
+    0 0 20px #7928ca,
+    0 0 30px #7928ca,
+    0 0 40px rgba(121, 40, 202, 0.5);
+}
+
+.led-light:nth-child(3n+1) {
+  background: radial-gradient(circle, #ff0080 0%, #e00073 50%, #c0005e 100%);
+  box-shadow: 
+    0 0 10px #ff0080,
+    0 0 20px #ff0080,
+    0 0 30px #ff0080,
+    0 0 40px rgba(255, 0, 128, 0.5);
+}
+
+@keyframes ledPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.8);
+  }
+}
+
+/* Rotating LED effect */
+@keyframes ledRotate {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* ============================================
+   WINNER ARROW - Professional Casino Style
+   ============================================ */
+.wheel-arrow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.wheel-arrow-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wheel-arrow-label {
+  display: flex;
+  align-items: center;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #00f2fe 0%, #7928ca 50%, #ff0080 100%);
+  padding: 1rem 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 
+    0 10px 30px rgba(0, 242, 254, 0.4),
+    0 0 60px rgba(121, 40, 202, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  white-space: nowrap;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: neonPulse 2s ease-in-out infinite;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.wheel-arrow-label::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  animation: shimmer 3s infinite;
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 10px 30px rgba(0, 242, 254, 0.4),
+      0 0 60px rgba(121, 40, 202, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 
+      0 15px 40px rgba(0, 242, 254, 0.6),
+      0 0 80px rgba(121, 40, 202, 0.5),
+      0 0 100px rgba(255, 0, 128, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.wheel-arrow-svg {
+  filter: drop-shadow(0 10px 25px rgba(121, 40, 202, 0.6))
+          drop-shadow(0 0 20px rgba(0, 242, 254, 0.4));
+  animation: arrowBounce 2s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ============================================
+   WHEEL SVG - Casino Aesthetic
+   ============================================ */
+.wheel-svg {
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.5));
+}
+
+.wheel-rotating-group {
+  will-change: transform;
+  transform-origin: center;
+}
+
+/* Pulsing outer rings */
+.pulse-ring {
+  animation: ringPulse 3s ease-in-out infinite;
+}
+
+@keyframes ringPulse {
+  0%, 100% {
+    opacity: 0.4;
+    stroke-width: 2;
+  }
+  50% {
+    opacity: 0.8;
+    stroke-width: 4;
+  }
+}
+
+/* Wheel segments hover effect (subtle) */
+.wheel-segment {
+  transition: opacity 0.3s ease;
+}
+
+/* ============================================
+   CENTER BUTTON - Professional Design
+   ============================================ */
+.center-button-group {
+  transition: opacity 0.3s ease;
+}
+
+.center-button-group:hover:not([opacity="0.6"]) .button-glow-ring {
+  stroke-width: 6;
+  opacity: 0.8;
+}
+
+.button-glow-ring {
+  animation: buttonGlow 2s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+@keyframes buttonGlow {
+  0%, 100% {
+    opacity: 0.5;
+    stroke-width: 4;
+  }
+  50% {
+    opacity: 0.8;
+    stroke-width: 6;
+  }
+}
+
+/* ============================================
+   WINNER DISPLAY - Glass Morphism Casino Card
+   ============================================ */
+
+.wheel-winner-display {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28rem;
+  animation: slideUpFade 0.5s ease-out;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.wheel-winner-card {
+  background: rgba(15, 12, 41, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-align: center;
+  border: 2px solid;
+  border-image: linear-gradient(135deg, #00f2fe, #7928ca, #ff0080) 1;
+  position: relative;
+  overflow: hidden;
+  animation: cardPulse 2s ease-in-out infinite;
+}
+
+.winner-product-image {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  animation: fadeInScale 0.8s ease-out;
+}
+
+.winner-product-image img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    0 0 0 3px rgba(255, 255, 255, 0.2),
+    0 0 40px rgba(0, 242, 254, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.wheel-winner-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 242, 254, 0.1) 0%,
+    transparent 50%
+  );
+  animation: rotate 8s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cardPulse {
+  0%, 100% {
+    box-shadow: 
+      0 25px 60px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 40px rgba(0, 242, 254, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 30px 70px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 0 60px rgba(121, 40, 202, 0.4),
+      0 0 80px rgba(255, 0, 128, 0.2);
+  }
+}
+
+.winner-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  animation: iconSpin 1s ease-out;
+}
+
+@keyframes iconSpin {
+  from {
+    transform: rotate(0deg) scale(0);
+  }
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.wheel-winner-title {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  background: linear-gradient(135deg, #00f2fe 0%, #7928ca 50%, #ff0080 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 4px 12px rgba(0, 242, 254, 0.3));
+}
+
+.wheel-winner-divider {
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00f2fe, #7928ca, #ff0080, transparent);
+  margin: 0 auto 1.5rem;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+.wheel-winner-name {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 
+    0 0 20px rgba(0, 242, 254, 0.8),
+    0 0 40px rgba(121, 40, 202, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 1;
+  animation: textGlow 2s ease-in-out infinite;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 20px rgba(0, 242, 254, 0.8),
+      0 0 40px rgba(121, 40, 202, 0.6),
+      0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    text-shadow: 
+      0 0 30px rgba(0, 242, 254, 1),
+      0 0 60px rgba(121, 40, 202, 0.8),
+      0 0 80px rgba(255, 0, 128, 0.6),
+      0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+  .fortune-wheel-container {
+    gap: 4.5rem;
+    padding-top: 3rem;
+  }
+
+  .wheel-current-segment-display {
+    padding: 1.2rem 2rem;
+    min-width: 250px;
+    margin-bottom: 2rem;
+  }
+
+  .current-segment-label {
+    font-size: 0.8rem;
+  }
+
+  .current-segment-name {
+    font-size: 1.6rem;
+  }
+
+  .wheel-winner-display {
+    width: 90% !important;
+    max-width: 24rem;
+  }
+
+  .wheel-winner-card {
+    padding: 2rem;
+  }
+
+  .winner-product-image img {
+    width: 160px;
+    height: 160px;
+  }
+
+  .wheel-winner-title {
+    font-size: 1.5rem;
+  }
+
+  .wheel-winner-name {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .fortune-wheel-container {
+    gap: 3.5rem;
+    padding-top: 2rem;
+  }
+
+  .wheel-current-segment-display {
+    padding: 1rem 1.5rem;
+    min-width: 200px;
+    margin-bottom: 1.5rem;
+  }
+
+  .current-segment-label {
+    font-size: 0.7rem;
+  }
+
+  .current-segment-name {
+    font-size: 1.3rem;
+  }
+
+  .wheel-arrow-label {
+    font-size: 0.9rem;
+    padding: 0.8rem 1.5rem;
+  }
+
+  .winner-product-image img {
+    width: 120px;
+    height: 120px;
+  }
+}

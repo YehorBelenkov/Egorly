@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { firestore, storage } from '../../../lib/firebaseConfig';  // Use firestore and storage
-import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';  // Firestore functions
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';  // Firestore functions
 import { ref, deleteObject, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase Storage functions
 import './index.css';
 
@@ -9,6 +9,7 @@ const ShowProducts = ({ idToken }) => {
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null); // State to hold product being edited
   const [editedProduct, setEditedProduct] = useState({}); // State for the edited product data
+  const [loadLimit, setLoadLimit] = useState(20); // Limit products to prevent memory issues
   
   // For adding new attributes
   const [newAttributeKey, setNewAttributeKey] = useState('');
@@ -27,23 +28,40 @@ const ShowProducts = ({ idToken }) => {
 
   // Fetch products data from Firestore
   useEffect(() => {
+    let isMounted = true
+    
     const fetchProducts = async () => {
       try {
-        const querySnapshot = await getDocs(collection(firestore, 'products'));  // Use firestore instead of db
+        // Add limit to prevent loading all products at once
+        const productsQuery = query(
+          collection(firestore, 'products'),
+          orderBy('name'),
+          limit(loadLimit)
+        )
+        const querySnapshot = await getDocs(productsQuery);
         const productList = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setProducts(productList);  // Set fetched products into state
+        
+        if (isMounted) {
+          setProducts(productList);  // Set fetched products into state
+        }
       } catch (err) {
         console.error('Error fetching products:', err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts(); // Fetch products when the component loads
-  }, []);
+    
+    return () => {
+      isMounted = false
+    }
+  }, [loadLimit]);
 
   // Handle delete action
   const handleDelete = async (productId, product) => {
@@ -267,52 +285,75 @@ const ShowProducts = ({ idToken }) => {
       {loading ? (
         <p>Loading products...</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Price</th>
-              <th>Quantity</th>
-              <th>Storage</th>
-              <th>Wholesale</th>
-              <th>Min Order</th>
-              <th>Wholesale Price</th>
-              <th>Edit</th>
-              <th>Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.length === 0 ? (
+        <>
+          <table>
+            <thead>
               <tr>
-                <td colSpan="6">No products available.</td>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Storage</th>
+                <th>Wholesale</th>
+                <th>Min Order</th>
+                <th>Wholesale Price</th>
+                <th>Edit</th>
+                <th>Delete</th>
               </tr>
-            ) : (
-              products.map(product => (
-                <tr key={product.id}>
-                  <td>
-                    <img src={(product.imageUrls && product.imageUrls[0]) || product.imageUrl} alt={product.name} width="50" />
-                  </td>
-                  <td>{product.name}</td>
-                  <td>{product.price}</td>
-                  <td>{product.quantity}</td>
-                  <td>
-                    {product.soldOut ? <span style={{ color: 'red', fontWeight: 'bold' }}>Sold Out</span> : 'Available'}
-                  </td>
-                  <td>{product.wholesaleAvailable ? "Yes" : "No"}</td>
-                  <td>{product.wholesaleAvailable ? product.wholesaleMinOrder : "-"}</td>
-                  <td>{product.wholesaleAvailable ? `$${product.wholesalePrice}` : "-"}</td>
-                  <td>
-                    <button className='editbtn' onClick={() => handleEdit(product)}>Edit</button>
-                  </td>
-                  <td>
-                    <button className='delbtn' onClick={() => handleDelete(product.id, product)}>Delete</button>
-                  </td>
+            </thead>
+            <tbody>
+              {products.length === 0 ? (
+                <tr>
+                  <td colSpan="6">No products available.</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                products.map(product => (
+                  <tr key={product.id}>
+                    <td>
+                      <img src={(product.imageUrls && product.imageUrls[0]) || product.imageUrl} alt={product.name} width="50" />
+                    </td>
+                    <td>{product.name}</td>
+                    <td>{product.price}</td>
+                    <td>{product.quantity}</td>
+                    <td>
+                      {product.soldOut ? <span style={{ color: 'red', fontWeight: 'bold' }}>Sold Out</span> : 'Available'}
+                    </td>
+                    <td>{product.wholesaleAvailable ? "Yes" : "No"}</td>
+                    <td>{product.wholesaleAvailable ? product.wholesaleMinOrder : "-"}</td>
+                    <td>{product.wholesaleAvailable ? `$${product.wholesalePrice}` : "-"}</td>
+                    <td>
+                      <button className='editbtn' onClick={() => handleEdit(product)}>Edit</button>
+                    </td>
+                    <td>
+                      <button className='delbtn' onClick={() => handleDelete(product.id, product)}>Delete</button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+          
+          {/* Load More Button */}
+          {products.length >= loadLimit && (
+            <div style={{ textAlign: 'center', marginTop: '2rem', padding: '1rem' }}>
+              <button 
+                onClick={() => setLoadLimit(prev => prev + 20)}
+                style={{
+                  padding: '0.75rem 2rem',
+                  background: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '1rem'
+                }}
+              >
+                Load More Products (showing {products.length})
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {editingProduct && (

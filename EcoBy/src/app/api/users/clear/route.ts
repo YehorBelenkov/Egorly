@@ -15,16 +15,16 @@ export async function OPTIONS() {
 export async function POST() {
   try {
     const scraperInstance = getScraperInstance();
-    scraperInstance.disconnect();
+    await scraperInstance.clearAllUsers();
 
     return NextResponse.json({
       success: true,
-      message: 'Disconnected from live stream'
+      message: 'All user data cleared successfully'
     }, { headers: corsHeaders });
   } catch (error: any) {
-    console.error('Disconnect API error:', error);
+    console.error('Clear users API error:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to disconnect'
+      error: error.message || 'Failed to clear user data'
     }, { status: 500, headers: corsHeaders });
   }
 }

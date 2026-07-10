@@ -1,22 +1,11 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
 const { WebcastPushConnection } = require('tiktok-live-connector');
 
-// TikTok Live Stream Event Tracker with Real-Time Data
+// Import Firestore helpers (using dynamic import for ESM compatibility)
+let dbHelpers = null;
+
+// TikTok Live Stream Event Tracker with Firestore
 class TikTokScraper {
   constructor() {
-    // Use process.cwd() which works in Next.js API routes
-    const dbDir = path.join(process.cwd(), 'data');
-    const dbPath = path.join(dbDir, 'tiktok.db');
-    
-    // Ensure the data directory exists
-    if (!fs.existsSync(dbDir)) {
-      fs.mkdirSync(dbDir, { recursive: true });
-    }
-    
-    this.db = new Database(dbPath);
-    this.initDatabase();
     this.tiktokConnection = null;
     this.isConnected = false;
     this.eventCallbacks = {
@@ -25,29 +14,17 @@ class TikTokScraper {
       onError: null,
       onEvent: null,
     };
+    this.usersCache = new Map(); // In-memory cache for faster updates
+    this.initFirestore();
   }
 
-  initDatabase() {
-    // Initialize database tables
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        uniqueId TEXT UNIQUE NOT NULL,
-        nickname TEXT,
-        profilePictureUrl TEXT,
-        followCount INTEGER DEFAULT 0,
-        giftCount INTEGER DEFAULT 0,
-        likeCount INTEGER DEFAULT 0,
-        commentCount INTEGER DEFAULT 0,
-        engagementScore INTEGER DEFAULT 0,
-        lastSeen DATETIME DEFAULT CURRENT_TIMESTAMP,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-
-      CREATE INDEX IF NOT EXISTS idx_engagement_score ON users(engagementScore DESC);
-      CREATE INDEX IF NOT EXISTS idx_username ON users(username);
-    `);
+  async initFirestore() {
+    // Dynamically import the Firestore helpers
+    if (!dbHelpers) {
+      const module = await import('../firestoreDb');
+      dbHelpers = module.dbHelpers;
+      console.log('✅ Firestore DB helpers loaded');
+    }
   }
 
   // Calculate engagement score based on actions
@@ -56,119 +33,196 @@ class TikTokScraper {
     return (giftCount * 100) + (followCount * 50) + (commentCount * 10) + (likeCount * 1);
   }
 
-  // Update or insert user data
-  upsertUser(userData) {
+  // Update or insert user data in cache and Firestore
+  async upsertUser(userData) {
     const { username, uniqueId, nickname, profilePictureUrl } = userData;
     
-    const stmt = this.db.prepare(`
-      INSERT INTO users (username, uniqueId, nickname, profilePictureUrl)
-      VALUES (?, ?, ?, ?)
-      ON CONFLICT(username) DO UPDATE SET
-        lastSeen = CURRENT_TIMESTAMP,
-        nickname = excluded.nickname,
-        profilePictureUrl = excluded.profilePictureUrl
-    `);
+    // Get current user data from cache or initialize
+    let user = this.usersCache.get(uniqueId) || {
+      username: username || uniqueId,
+      uniqueId,
+      nickname: nickname || username,
+      profilePictureUrl: profilePictureUrl || '',
+      followCount: 0,
+      giftCount: 0,
+      likeCount: 0,
+      commentCount: 0,
+      engagementScore: 0,
+    };
 
-    const result = stmt.run(username, uniqueId, nickname || username, profilePictureUrl || null);
-    return result.changes > 0;
+    // Update cache
+    this.usersCache.set(uniqueId, user);
+
+    // Update Firestore (fire and forget to avoid blocking)
+    if (dbHelpers) {
+      dbHelpers.upsertUser(user).catch(err => 
+        console.error('Error upserting user to Firestore:', err)
+      );
+    }
   }
 
   // Track a follow event
-  trackFollow(username, uniqueId) {
-    this.upsertUser({ username, uniqueId });
-    
-    const stmt = this.db.prepare(`
-      UPDATE users 
-      SET followCount = followCount + 1,
-          engagementScore = (giftCount * 100) + ((followCount + 1) * 50) + (commentCount * 10) + (likeCount * 1),
-          lastSeen = CURRENT_TIMESTAMP
-      WHERE username = ?
-    `);
-    
-    stmt.run(username);
-    // Follow tracked (silent)
+  async trackFollow(username, uniqueId) {
+    let user = this.usersCache.get(uniqueId) || {
+      username: username || uniqueId,
+      uniqueId,
+      nickname: username,
+      profilePictureUrl: '',
+      followCount: 0,
+      giftCount: 0,
+      likeCount: 0,
+      commentCount: 0,
+      engagementScore: 0,
+    };
+
+    user.followCount += 1;
+    user.engagementScore = this.calculateEngagementScore(
+      user.followCount,
+      user.giftCount,
+      user.likeCount,
+      user.commentCount
+    );
+
+    this.usersCache.set(uniqueId, user);
+
+    // Update Firestore
+    if (dbHelpers) {
+      dbHelpers.upsertUser(user).catch(err => 
+        console.error('Error tracking follow:', err)
+      );
+    }
   }
 
   // Track a gift event
-  trackGift(username, uniqueId, giftName, giftValue = 1) {
-    this.upsertUser({ username, uniqueId });
-    
-    const stmt = this.db.prepare(`
-      UPDATE users 
-      SET giftCount = giftCount + ?,
-          engagementScore = ((giftCount + ?) * 100) + (followCount * 50) + (commentCount * 10) + (likeCount * 1),
-          lastSeen = CURRENT_TIMESTAMP
-      WHERE username = ?
-    `);
-    
-    stmt.run(giftValue, giftValue, username);
-    // Gift tracked (silent)
+  async trackGift(username, uniqueId, giftName, giftValue = 1) {
+    let user = this.usersCache.get(uniqueId) || {
+      username: username || uniqueId,
+      uniqueId,
+      nickname: username,
+      profilePictureUrl: '',
+      followCount: 0,
+      giftCount: 0,
+      likeCount: 0,
+      commentCount: 0,
+      engagementScore: 0,
+    };
+
+    user.giftCount += giftValue;
+    user.engagementScore = this.calculateEngagementScore(
+      user.followCount,
+      user.giftCount,
+      user.likeCount,
+      user.commentCount
+    );
+
+    this.usersCache.set(uniqueId, user);
+
+    // Update Firestore
+    if (dbHelpers) {
+      dbHelpers.upsertUser(user).catch(err => 
+        console.error('Error tracking gift:', err)
+      );
+    }
   }
 
   // Track a like event
-  trackLike(username, uniqueId) {
-    this.upsertUser({ username, uniqueId });
-    
-    const stmt = this.db.prepare(`
-      UPDATE users 
-      SET likeCount = likeCount + 1,
-          engagementScore = (giftCount * 100) + (followCount * 50) + (commentCount * 10) + ((likeCount + 1) * 1),
-          lastSeen = CURRENT_TIMESTAMP
-      WHERE username = ?
-    `);
-    
-    stmt.run(username);
-    // Like tracking (silent - too many logs)
+  async trackLike(username, uniqueId) {
+    let user = this.usersCache.get(uniqueId) || {
+      username: username || uniqueId,
+      uniqueId,
+      nickname: username,
+      profilePictureUrl: '',
+      followCount: 0,
+      giftCount: 0,
+      likeCount: 0,
+      commentCount: 0,
+      engagementScore: 0,
+    };
+
+    user.likeCount += 1;
+    user.engagementScore = this.calculateEngagementScore(
+      user.followCount,
+      user.giftCount,
+      user.likeCount,
+      user.commentCount
+    );
+
+    this.usersCache.set(uniqueId, user);
+
+    // Update Firestore (throttled to avoid too many writes)
+    if (dbHelpers && user.likeCount % 5 === 0) { // Only save every 5 likes
+      dbHelpers.upsertUser(user).catch(err => 
+        console.error('Error tracking like:', err)
+      );
+    }
   }
 
   // Track a comment event
-  trackComment(username, uniqueId, comment) {
-    this.upsertUser({ username, uniqueId });
-    
-    const stmt = this.db.prepare(`
-      UPDATE users 
-      SET commentCount = commentCount + 1,
-          engagementScore = (giftCount * 100) + (followCount * 50) + ((commentCount + 1) * 10) + (likeCount * 1),
-          lastSeen = CURRENT_TIMESTAMP
-      WHERE username = ?
-    `);
-    
-    stmt.run(username);
-    // Comment tracked (silent)
+  async trackComment(username, uniqueId, comment) {
+    let user = this.usersCache.get(uniqueId) || {
+      username: username || uniqueId,
+      uniqueId,
+      nickname: username,
+      profilePictureUrl: '',
+      followCount: 0,
+      giftCount: 0,
+      likeCount: 0,
+      commentCount: 0,
+      engagementScore: 0,
+    };
+
+    user.commentCount += 1;
+    user.engagementScore = this.calculateEngagementScore(
+      user.followCount,
+      user.giftCount,
+      user.likeCount,
+      user.commentCount
+    );
+
+    this.usersCache.set(uniqueId, user);
+
+    // Update Firestore
+    if (dbHelpers) {
+      dbHelpers.upsertUser(user).catch(err => 
+        console.error('Error tracking comment:', err)
+      );
+    }
   }
 
   // Get top users by engagement
-  getTopUsers(limit = 50) {
-    const stmt = this.db.prepare(`
-      SELECT * FROM users 
-      ORDER BY engagementScore DESC, lastSeen DESC 
-      LIMIT ?
-    `);
-    
-    return stmt.all(limit);
+  async getTopUsers(limit = 50) {
+    if (!dbHelpers) {
+      await this.initFirestore();
+    }
+    return dbHelpers ? await dbHelpers.getTopUsers(limit) : [];
   }
 
   // Get all users
-  getAllUsers() {
-    const stmt = this.db.prepare('SELECT * FROM users ORDER BY engagementScore DESC');
-    return stmt.all();
+  async getAllUsers() {
+    if (!dbHelpers) {
+      await this.initFirestore();
+    }
+    return dbHelpers ? await dbHelpers.getAllUsers() : [];
   }
 
-  // Clear all user data (for testing or reset)
-  clearAllUsers() {
-    // Clear winners first (foreign key constraint)
-    this.db.prepare('DELETE FROM winners').run();
-    // Then clear users
-    this.db.prepare('DELETE FROM users').run();
-    console.log('🗑️ All users and winners cleared for new stream');
+  // Clear all user data
+  async clearAllUsers() {
+    this.usersCache.clear();
+    if (!dbHelpers) {
+      await this.initFirestore();
+    }
+    if (dbHelpers) {
+      await dbHelpers.clearAllUsers();
+      console.log('🗑️ All scraper users cleared');
+    }
   }
 
-  // Close database connection
+  // Close connection (no database to close for Firestore)
   close() {
     if (this.tiktokConnection) {
       this.disconnect();
     }
-    this.db.close();
+    this.usersCache.clear();
   }
 
   // Connect to TikTok Live Stream

@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getScraperInstance } from '@/lib/scraper/instance';
 
+// CORS headers for cross-origin requests
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { username } = await request.json();
 
     if (!username) {
-      return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Username is required' }, { status: 400, headers: corsHeaders });
     }
 
     // Get the shared scraper instance
@@ -18,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         error: 'Already connected to a live stream. Disconnect first.',
         currentUsername: status.username
-      }, { status: 400 });
+      }, { status: 400, headers: corsHeaders });
     }
 
     // Clear all existing users before connecting to new stream
@@ -33,17 +44,17 @@ export async function POST(request: NextRequest) {
         success: true,
         message: result.message,
         username
-      });
+      }, { headers: corsHeaders });
     } else {
       return NextResponse.json({
         error: result.message
-      }, { status: 500 });
+      }, { status: 500, headers: corsHeaders });
     }
   } catch (error: any) {
     console.error('Connect API error:', error);
     return NextResponse.json({
       error: error.message || 'Failed to connect to TikTok live stream'
-    }, { status: 500 });
+    }, { status: 500, headers: corsHeaders });
   }
 }
 
@@ -51,10 +62,10 @@ export async function GET() {
   try {
     const scraperInstance = getScraperInstance();
     const status = scraperInstance.getConnectionStatus();
-    return NextResponse.json(status);
+    return NextResponse.json(status, { headers: corsHeaders });
   } catch (error: any) {
     return NextResponse.json({
       error: error.message
-    }, { status: 500 });
+    }, { status: 500, headers: corsHeaders });
   }
 }

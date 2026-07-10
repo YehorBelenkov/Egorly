@@ -13,6 +13,10 @@ const TikTokScraper = () => {
   const [discountEnabled, setDiscountEnabled] = useState(false);
   const [discountPercentage, setDiscountPercentage] = useState(20);
   const [updatingDiscount, setUpdatingDiscount] = useState(false);
+  
+  // Clear data state
+  const [clearingData, setClearingData] = useState(false);
+  const [clearingNonGiftUsers, setClearingNonGiftUsers] = useState(false);
 
   // Poll for updated user data every 2 seconds
   useEffect(() => {
@@ -65,25 +69,28 @@ const TikTokScraper = () => {
 
   const checkConnectionStatus = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/scraper/connect');
-      const data = await res.json();
-      if (data.isConnected) {
-        setIsConnected(true);
-        setCurrentStreamer(data.username);
+      const res = await fetch('/api/scraper/connect');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.isConnected) {
+          setIsConnected(true);
+          setCurrentStreamer(data.username);
+        }
       }
     } catch (err) {
-      console.error('Failed to check status:', err);
+      // Silently fail
     }
   };
 
   const fetchTopUsers = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/users');
+      const res = await fetch('/api/scraper-users');
       if (!res.ok) throw new Error('Failed to fetch users');
       const data = await res.json();
-      setTopUsers(data.slice(0, 50));
+      setTopUsers(data); // API now returns top 200, no need to slice
+      setError(''); // Clear error if successful
     } catch (err) {
-      console.error('Failed to fetch users:', err);
+      // Silently fail - don't spam console
     }
   };
 
@@ -97,7 +104,7 @@ const TikTokScraper = () => {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:3001/api/scraper/connect', {
+      const res = await fetch('/api/scraper/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim() }),
@@ -105,22 +112,15 @@ const TikTokScraper = () => {
 
       const data = await res.json();
 
-      if (res.ok) {
+      if (res.ok && data.isConnected) {
         setIsConnected(true);
         setCurrentStreamer(username.trim());
         setUsername('');
         setError('');
-        
-        setTimeout(async () => {
-          const statusRes = await fetch('http://localhost:3001/api/scraper/connect');
-          const statusData = await statusRes.json();
-          if (!statusData.isConnected) {
-            setError('Connection established but websocket failed. Try another streamer or check if they are live.');
-            setIsConnected(false);
-          }
-        }, 3000);
-        
         fetchTopUsers();
+      } else if (res.ok && !data.isConnected) {
+        setError('Failed to connect. Make sure the user is currently LIVE on TikTok.');
+        setIsConnected(false);
       } else {
         setError(data.error || 'Failed to connect');
       }
@@ -134,11 +134,74 @@ const TikTokScraper = () => {
 
   const handleDisconnect = async () => {
     try {
-      await fetch('http://localhost:3001/api/scraper/disconnect', { method: 'POST' });
-      setIsConnected(false);
-      setCurrentStreamer('');
+      console.log('🔴 User clicked Disconnect button');
+      const res = await fetch('/api/scraper/disconnect', { method: 'POST' });
+      const data = await res.json();
+      
+      console.log('Disconnect response:', data);
+      
+      if (res.ok) {
+        setIsConnected(false);
+        setCurrentStreamer('');
+        console.log('✅ UI updated: disconnected');
+      } else {
+        setError('Failed to disconnect');
+      }
     } catch (err) {
+      console.error('Disconnect error:', err);
       setError('Failed to disconnect');
+    }
+  };
+
+  const handleClearData = async () => {
+    if (!window.confirm('Are you sure you want to clear all user data? This action cannot be undone.')) {
+      return;
+    }
+
+    setClearingData(true);
+    try {
+      const res = await fetch('/api/scraper-users/clear', {
+        method: 'POST',
+      });
+
+      if (res.ok) {
+        setTopUsers([]);
+        setError('');
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to clear data');
+      }
+    } catch (err) {
+      setError('Failed to clear data');
+    } finally {
+      setClearingData(false);
+    }
+  };
+
+  const handleClearNonGiftUsers = async () => {
+    if (!window.confirm('Remove all users who only commented/liked (no gifts)? Users with gifts will be kept for the fortune wheel.')) {
+      return;
+    }
+
+    setClearingNonGiftUsers(true);
+    try {
+      const res = await fetch('/api/scraper-users/clear-non-gift', {
+        method: 'POST',
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert(`✅ ${data.message}`);
+        fetchTopUsers(); // Refresh the list
+        setError('');
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to clear non-gift users');
+      }
+    } catch (err) {
+      setError('Failed to clear non-gift users');
+    } finally {
+      setClearingNonGiftUsers(false);
     }
   };
 
@@ -302,9 +365,31 @@ const TikTokScraper = () => {
               <span className="scraper-table-icon">🏆</span>
               Live User Tracker
             </h2>
-            <div className="scraper-auto-update">
-              <div className="scraper-update-dot"></div>
-              <span className="scraper-update-text">Auto-updating every 2s</span>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div className="scraper-auto-update">
+                <div className="scraper-update-dot"></div>
+                <span className="scraper-update-text">Auto-updating every 2s</span>
+              </div>
+              {topUsers.length > 0 && (
+                <>
+                  <button
+                    onClick={handleClearNonGiftUsers}
+                    disabled={clearingNonGiftUsers}
+                    className="scraper-clear-btn scraper-clear-non-gift-btn"
+                    title="Remove users who only commented/liked (keeps gift users for fortune wheel)"
+                  >
+                    {clearingNonGiftUsers ? '⏳ Removing...' : '🧹 Clear Non-Gift Users'}
+                  </button>
+                  <button
+                    onClick={handleClearData}
+                    disabled={clearingData}
+                    className="scraper-clear-btn"
+                    title="Clear all user data"
+                  >
+                    {clearingData ? '⏳ Clearing...' : '🗑️ Clear All Data'}
+                  </button>
+                </>
+              )}
             </div>
           </div>
           
@@ -322,16 +407,13 @@ const TikTokScraper = () => {
                     <th className="scraper-th">#</th>
                     <th className="scraper-th scraper-th-left">Username</th>
                     <th className="scraper-th scraper-th-center scraper-th-yellow">🎁 Gifts</th>
-                    <th className="scraper-th scraper-th-center scraper-th-green">✅ Follows</th>
-                    <th className="scraper-th scraper-th-center scraper-th-blue">💬 Comments</th>
-                    <th className="scraper-th scraper-th-center scraper-th-red">❤️ Likes</th>
                     <th className="scraper-th scraper-th-center scraper-th-purple">⭐ Score</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topUsers.map((user, index) => (
                     <tr
-                      key={user.username}
+                      key={user.id || index}
                       className={`scraper-tr ${index < 3 ? 'scraper-tr-top' : ''}`}
                     >
                       <td className="scraper-td">
@@ -346,27 +428,12 @@ const TikTokScraper = () => {
                       </td>
                       <td className="scraper-td scraper-td-center">
                         <span className="scraper-badge scraper-badge-yellow">
-                          {user.giftCount}
-                        </span>
-                      </td>
-                      <td className="scraper-td scraper-td-center">
-                        <span className="scraper-badge scraper-badge-green-light">
-                          {user.followCount}
-                        </span>
-                      </td>
-                      <td className="scraper-td scraper-td-center">
-                        <span className="scraper-badge scraper-badge-blue-light">
-                          {user.commentCount}
-                        </span>
-                      </td>
-                      <td className="scraper-td scraper-td-center">
-                        <span className="scraper-badge scraper-badge-red-light">
-                          {user.likeCount}
+                          {user.giftCount || 0}
                         </span>
                       </td>
                       <td className="scraper-td scraper-td-center">
                         <span className={`scraper-score scraper-score-${index === 0 ? 'gold' : index < 3 ? 'top' : 'default'}`}>
-                          {user.engagementScore}
+                          {user.engagementScore || 0}
                         </span>
                       </td>
                     </tr>

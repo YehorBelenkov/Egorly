@@ -6,6 +6,8 @@ import AddProduct from '../../app/adminComponents/AddProduct';
 import ShowProducts from '../../app/adminComponents/ShowProducts';
 import OrdersManagement from '../../app/adminComponents/OrdersManagement';
 import TikTokScraper from '../../app/adminComponents/TikTokScraper';
+import FortuneWheelAdmin from '../../app/adminComponents/FortuneWheelAdmin';
+import ProfitsManagement from '../../app/adminComponents/ProfitsManagement';
 import "./index.css";
 
 const AdminPanel = () => {
@@ -70,22 +72,12 @@ const AdminPanel = () => {
         return <ShowProducts idToken={idToken} />;
       case 'orders':
         return <OrdersManagement idToken={idToken} />;
+      case 'profits':
+        return <ProfitsManagement idToken={idToken} />;
       case 'scraper':
         return <TikTokScraper />;
       case 'fortuneWheel':
-        return (
-          <div className="iframe-page">
-            <div className="iframe-header">
-              <h2>🎡 Fortune Wheel</h2>
-              <p>Spin the wheel for your TikTok followers and select winners</p>
-            </div>
-            <iframe 
-              src="http://localhost:3001/wheel" 
-              className="admin-content-iframe"
-              title="Fortune Wheel"
-            />
-          </div>
-        );
+        return <FortuneWheelAdmin />;
       default:
         return (
           <div className="welcome-screen">
@@ -160,6 +152,13 @@ const AdminPanel = () => {
             >
               <span className="action-icon">🛒</span>
               Orders
+            </button>
+            <button 
+              className={`action ${activeComponent === 'profits' ? 'active' : ''}`}
+              onClick={() => handleMenuClick('profits')}
+            >
+              <span className="action-icon">💰</span>
+              Profits
             </button>
             <button 
               className={`action ${activeComponent === 'customers' ? 'active' : ''}`}

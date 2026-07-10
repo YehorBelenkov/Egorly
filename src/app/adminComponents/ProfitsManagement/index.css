@@ -1,0 +1,453 @@
+.profits-management {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.profits-loading {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.profits-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.profits-header h1 {
+    font-size: 2rem;
+    color: #222;
+    margin: 0;
+}
+
+.date-range-selector {
+    display: flex;
+    gap: 0.5rem;
+    background: #f5f5f5;
+    padding: 0.25rem;
+    border-radius: 8px;
+}
+
+.date-range-selector button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.date-range-selector button.active {
+    background: white;
+    color: #4CAF50;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.date-range-selector button:hover {
+    color: #4CAF50;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.metric-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.metric-content {
+    flex: 1;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.metric-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 0.25rem;
+}
+
+.metric-sub {
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.metric-card.revenue {
+    border-left: 4px solid #4CAF50;
+}
+
+.metric-card.spendings {
+    border-left: 4px solid #FF9800;
+}
+
+.metric-card.profit.positive {
+    border-left: 4px solid #2196F3;
+}
+
+.metric-card.profit.negative {
+    border-left: 4px solid #f44336;
+}
+
+/* Chart Section */
+.chart-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.chart-section h2 {
+    margin: 0 0 1.5rem 0;
+    color: #222;
+}
+
+.simple-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.chart-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bar-label {
+    min-width: 100px;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.bar-container {
+    flex: 1;
+    background: #f0f0f0;
+    border-radius: 8px;
+    height: 50px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 1rem;
+    color: white;
+    font-weight: 700;
+    transition: width 0.5s ease;
+    border-radius: 8px;
+}
+
+.revenue-bar {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.spendings-bar {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+}
+
+.profit-bar.positive {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.profit-bar.negative {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+}
+
+/* Category Breakdown */
+.category-breakdown {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #f0f0f0;
+}
+
+.category-breakdown h3 {
+    margin: 0 0 1rem 0;
+    color: #222;
+}
+
+.category-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f8f8f8;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.category-item:hover {
+    background: #f0f0f0;
+}
+
+.category-name {
+    font-weight: 600;
+    color: #555;
+    text-transform: capitalize;
+}
+
+.category-amount {
+    font-weight: 700;
+    color: #FF9800;
+}
+
+/* Spendings Section */
+.spendings-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-header h2 {
+    margin: 0;
+    color: #222;
+}
+
+.add-spending-btn {
+    padding: 0.75rem 1.5rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-spending-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+/* Add Spending Form */
+.add-spending-form {
+    background: #f8f8f8;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.add-spending-form input,
+.add-spending-form select {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.add-spending-form input:focus,
+.add-spending-form select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.save-spending-btn {
+    padding: 0.75rem 1.5rem;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-spending-btn:hover {
+    background: #1976D2;
+}
+
+/* Spendings Table */
+.spendings-list {
+    overflow-x: auto;
+}
+
+.spendings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.spendings-table th {
+    text-align: left;
+    padding: 1rem;
+    background: #f8f8f8;
+    color: #555;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.spendings-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.spendings-table tbody tr:hover {
+    background: #fafafa;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.category-badge.inventory {
+    background: #E3F2FD;
+    color: #1976D2;
+}
+
+.category-badge.shipping {
+    background: #FFF3E0;
+    color: #F57C00;
+}
+
+.category-badge.marketing {
+    background: #F3E5F5;
+    color: #7B1FA2;
+}
+
+.category-badge.operations {
+    background: #E8F5E9;
+    color: #388E3C;
+}
+
+.category-badge.utilities {
+    background: #FFF9C4;
+    color: #F9A825;
+}
+
+.category-badge.salary {
+    background: #FCE4EC;
+    color: #C2185B;
+}
+
+.category-badge.other {
+    background: #ECEFF1;
+    color: #546E7A;
+}
+
+.amount-cell {
+    font-weight: 700;
+    color: #FF9800;
+}
+
+.delete-btn {
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: 1px solid #f44336;
+    color: #f44336;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.delete-btn:hover {
+    background: #f44336;
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #999;
+    font-size: 1.1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profits-management {
+        padding: 1rem;
+    }
+
+    .profits-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .bar-label {
+        min-width: auto;
+    }
+
+    .add-spending-form {
+        grid-template-columns: 1fr;
+    }
+
+    .spendings-table {
+        font-size: 0.9rem;
+    }
+
+    .spendings-table th,
+    .spendings-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}

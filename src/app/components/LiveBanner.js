@@ -20,11 +20,7 @@ export default function LiveBanner() {
     };
 
     fetchDiscountStatus();
-    
-    // Poll every 5 seconds to check if admin toggled it
-    const interval = setInterval(fetchDiscountStatus, 5000);
-    
-    return () => clearInterval(interval);
+    // No polling needed - just check once on load
   }, []);
 
   if (!isLive) return null;
